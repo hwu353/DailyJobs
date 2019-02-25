@@ -1,0 +1,1233 @@
+--Count Complete Tree Nodes
+
+//Given a complete binary tree, count the number of nodes.
+//In a complete binary tree every level, except possibly the last, is completely filled, and all nodes in the last level are as far left as possible. It can have between 1 and 2^h nodes inclusive at the last level h.
+
+
+public class Solution {
+    /**
+     * @param root: root of complete binary tree
+     * @return: the number of nodes
+     */
+    public int countNodes(TreeNode root) {
+        if (root == null) {return 0;}
+        
+        int leftH = getHeight(root.left);
+        int rightH = getHeight(root.right);
+        if (leftH == rightH) {
+            return 1 + countH(leftH) + countNodes(root.right);
+        } else {
+            return 1 + countH(rightH) + countNodes(root.left);
+        }
+    }
+    
+    int getHeight(TreeNode root) {
+        if (root == null) {return 0;}
+        int res = 0;
+        while (root != null) {
+            root = root.left;
+            res++;
+        }
+        return res;
+    }
+    
+    int countH(int h) {
+        int res = 1;
+        for (int i = 0; i < h; i++) {res *= 2;}
+        return res-1;
+    }
+}
+
+
+--Maximum Product of Word Lengths
+
+//Given a string array words, find the maximum value of length(word[i]) * length(word[j]) where the two words do not share common letters. You may assume that each word will contain only lower case letters. If no such two words exist, return 0.
+//Example 1:
+//Given ["abcw", "baz", "foo", "bar", "xtfn", "abcdef"]
+//Return 16
+//The two words can be "abcw", "xtfn".
+//
+//Example 2:
+//Given ["a", "ab", "abc", "d", "cd", "bcd", "abcd"]
+//Return 4
+//The two words can be "ab", "cd".
+//
+//Example 3:
+//Given ["a", "aa", "aaa", "aaaa"]
+//Return 0
+
+public class Solution {
+    /**
+     * @param words: a string array
+     * @return: the maximum product
+     */
+    public int maxProduct(String[] words) {
+        // Write your code here
+        if (words == null || words.length == 0) {return 0;}
+        
+        int[] tmp = new int[words.length];
+        for (int i = 0; i < words.length; i++) {tmp[i] = getBinary(words[i]);}
+        
+        int res = 0;
+        for (int i = 0; i < words.length; i++) {
+            for (int j = i+1; j < words.length; j++) {
+                if ((tmp[i] & tmp[j]) == 0) {
+                    res = Math.max(words[i].length() * words[j].length(), res);
+                }
+            }
+        }
+        return res;
+    }
+    
+    int getBinary(String s) {
+        int res = 0;
+        Set<Character> set = new HashSet<>();
+        for (char ch: s.toCharArray()) {
+            if (!set.contains(ch)) {
+                res += 1 << (ch - 'a');
+                set.add(ch);
+            }
+            
+        }
+        return res;
+    }
+}
+
+
+--Elimination Game
+//There is a list of sorted integers from 1 to n. Starting from left to right, remove the first number and every other number afterward until you reach the end of the list.
+//
+//Repeat the previous step again, but this time from right to left, remove the right most number and every other number from the remaining numbers.
+//
+//We keep repeating the steps again, alternating left to right and right to left, until a single number remains.
+//
+//Find the last number that remains starting with a list of length n.
+//
+//Input:
+//n = 9,
+//1 2 3 4 5 6 7 8 9
+//2 4 6 8
+//2 6
+//6
+//
+//Output:
+//6
+
+public class Solution {
+    /**
+     * @param n: a integer
+     * @return: return a integer
+     */
+    public int lastRemaining(int n) {
+        // write your code here
+        int head = 1;
+        int remain = n;
+        int step = 1;
+        boolean left = true;
+        
+        while (remain > 1) {
+            if (left || remain%2 == 1) {
+                head += step;
+            }
+            
+            remain /= 2;
+            step *= 2;
+            left = !left;
+        }
+        
+        return head;
+    }
+}
+
+
+
+--Perfect Rectangle
+//Given N axis-aligned rectangles where N > 0, determine if they all together form an exact cover of a rectangular region.
+//
+//Each rectangle is represented as a bottom-left point and a top-right point. For example, a unit square is represented as [1,1,2,2]. (coordinate of bottom-left point is (1, 1) and top-right point is (2, 2))
+//
+//rectangles = [
+//  [1,1,3,3],
+//  [3,1,4,2],
+//  [3,2,4,4],
+//  [1,3,2,4],
+//  [2,3,3,4]
+//]
+//
+//Return true. All 5 rectangles together form an exact cover of a rectangular region.
+//
+//
+//rectangles = [
+//  [1,1,2,3],
+//  [1,3,2,4],
+//  [3,1,4,2],
+//  [3,2,4,4]
+//]
+//
+//Return false. Because there is a gap between the two rectangular regions.
+//
+//rectangles = [
+//  [1,1,3,3],
+//  [3,1,4,2],
+//  [1,3,2,4],
+//  [3,2,4,4]
+//]
+//
+//Return false. Because there is a gap in the top center.
+//
+//rectangles = [
+//  [1,1,3,3],
+//  [3,1,4,2],
+//  [1,3,2,4],
+//  [2,2,4,4]
+//]
+//
+//Return false. Because two of the rectangles overlap with each other.
+
+public class Solution {
+    /**
+     * @param rectangles: N axis-aligned rectangles
+     * @return: if they all together form an exact cover of a rectangular region
+     */
+     //https://leetcode.com/problems/perfect-rectangle/discuss/87181/Really-Easy-Understanding-Solution(O(n)-Java)
+    public boolean isRectangleCover(int[][] rectangles) {
+        // write your code here
+        int x1 = Integer.MAX_VALUE;
+        int y1 = Integer.MAX_VALUE;
+        int x2 = Integer.MIN_VALUE;
+        int y2 = Integer.MIN_VALUE;
+        
+        int area = 0;
+        Set<String> set = new HashSet<>();
+        
+        for (int[] rec: rectangles) {
+            x1 = Math.min(x1, rec[0]);
+            y1 = Math.min(y1, rec[1]);
+            x2 = Math.max(x2, rec[2]);
+            y2 = Math.max(y2, rec[3]);
+            
+            area += (rec[3] - rec[1])*(rec[2] - rec[0]);
+            if (!set.add(rec[0] + "+" + rec[1])) {set.remove(rec[0] + "+" + rec[1]);}
+            if (!set.add(rec[0] + "+" + rec[3])) {set.remove(rec[0] + "+" + rec[3]);}
+            if (!set.add(rec[2] + "+" + rec[3])) {set.remove(rec[2] + "+" + rec[3]);}
+            if (!set.add(rec[2] + "+" + rec[1])) {set.remove(rec[2] + "+" + rec[1]);}
+        }
+        
+        if (!set.contains(x1 + "+" + y1) || !set.contains(x1 + "+" + y2) || !set.contains(x2 + "+" + y1) || !set.contains(x2 + "+" + y2)) {return false;}
+        
+        return area == (y2-y1)*(x2-x1);
+    }
+}
+
+
+--Smallest Good Base
+For an integer n, we call k>=2 a good base of n, if all digits of n base k are 1.
+
+Now given a string representing n, you should return the smallest good base of n in string format.
+
+Example 1:
+
+Input: "13"
+Output: "3"
+Explanation: 13 base 3 is 111.
+Example 2:
+
+Input: "4681"
+Output: "8"
+Explanation: 4681 base 8 is 11111.
+Example 3:
+
+Input: "1000000000000000000"
+Output: "999999999999999999"
+Explanation: 1000000000000000000 base 999999999999999999 is 11.
+
+
+public class Solution {
+    /**
+     * @param n: a string
+     * @return: return a string
+     */
+    public String smallestGoodBase(String n) {
+        // write your code here
+        long v = Long.parseLong(n);
+        
+        int len = (int)(Math.log(v+1)/Math.log(2));
+        
+        for (int i = len; i >= 2; i--) {
+            int left = 2, right = (int)Math.pow(v, i-1) + 1;
+            
+            while (left < right) {
+                int mid = left + (right - left)/2;
+                
+                long base = mid, sum = 1;
+                for (int j = 1; j < i; j++) {
+                    sum = sum + base;
+                    base = mid*base;
+                }
+                
+                if (sum == v) {return String.valueOf(mid);}
+                else if (sum < v) {left = mid + 1;}
+                else {right = mid - 1;}
+                
+            }
+        }
+        
+        return String.valueOf(v-1);
+    }
+}
+
+
+--Smallest Range
+You have k lists of sorted integers in ascending order. Find the smallest range that includes at least one number from each of the k lists.
+
+1.the range [a,b] is smaller than range [c,d] if b-a < d-c or a < c if b-a == d-c.
+2.The given list may contain duplicates, so ascending order means >= here.
+3.1 <= k <= 3500
+4.-105 <= value of elements <= 105.
+
+Input:[[4,10,15,24,26], [0,9,12,20], [5,18,22,30]]
+Output: [20,24]
+Explanation: 
+List 1: [4, 10, 15, 24,26], 24 is in range [20,24].
+List 2: [0, 9, 12, 20], 20 is in range [20,24].
+List 3: [5, 18, 22, 30], 22 is in range [20,24].
+
+public class Solution {
+    /**
+     * @param nums: k lists of sorted integers
+     * @return: the smallest range that includes at least one number from each of the k lists
+     */
+     //MLE but ac in leetcode
+    // public int[] smallestRange(List<List<Integer>> nums) {
+    //     // write your code here
+        
+    //     int[] res = new int[]{-1050000, 1050000};
+        
+    //     TreeMap<Integer, List<Integer>> map = new TreeMap<>();
+    //     for (int i = 0; i < nums.size(); i++) {
+    //         List<Integer> list = nums.get(i);
+    //         for (Integer k: list) {
+    //             if (!map.containsKey(k)) {
+    //                 map.put(k, new ArrayList<Integer>());
+    //             }
+    //             map.get(k).add(i);
+    //         }
+    //     }
+        
+    //     int j = 0;
+    //     int[] list_cnt = new int[nums.size()];
+    //     List<Integer> num = new ArrayList<>();
+        
+    //     Set<Integer> keys = map.keySet();
+    //     for (Integer key: keys) {
+    //         num.add(key);
+    //         for (Integer kk: map.get(key)) {list_cnt[kk]++;}
+    //         while (listGood(list_cnt)) {
+    //             if (num.get(num.size()-1) - num.get(0) < res[1] - res[0]) {
+    //                 res[0] = num.get(0);
+    //                 res[1] = num.get(num.size()-1);
+    //             }
+                
+    //             for (int list_index: map.get(num.get(0))) {
+    //                 list_cnt[list_index]--;
+    //             }
+    //             num.remove(0);
+    //         }
+    //     }
+        
+    //     return res;
+        
+    // }
+    
+    // boolean listGood (int[] list_cnt) {
+    //     for (int ii: list_cnt) {
+    //         if (ii <= 0) {return false;}
+    //     }
+    //     return true;
+    // }
+     public int[] smallestRange(List<List<Integer>> nums) {
+        // write your code here
+        PriorityQueue<Element> minQ = new PriorityQueue<>();
+        int max = Integer.MIN_VALUE;
+        for (int i = 0; i < nums.size(); i++) {
+            minQ.offer(new Element(nums.get(i).get(0), 0, i));
+            max = Math.max(max, nums.get(i).get(0));
+        } 
+        int start = 0;
+        int minLen = Integer.MAX_VALUE;
+        int[] res = new int[2];
+        while(minQ.size() == nums.size()) {
+            Element element = minQ.poll();
+            start = element.val;
+            if (max - start < minLen) {
+                res[0] = start;
+                res[1] = max;
+                minLen = max - start;
+            } 
+            if (element.index + 1 < nums.get(element.position).size()) {
+                Element next = new Element(nums.get(element.position).get(element.index + 1), element.index + 1, element.position);
+                minQ.offer(next);
+                max = Math.max(max, next.val);
+            }
+        }
+        return res;
+        
+        
+    }
+    
+    class Element implements Comparable<Element>{
+        public int val;
+        public int index;
+        public int position;
+        public Element(int val, int index, int position) {
+            this.val = val;
+            this.index = index;
+            this.position = position;
+        }
+        
+        public int compareTo(Element that) {
+            return this.val - that.val;
+        }
+    }
+}
+
+
+
+
+-- Stickers to Spell Word
+We are given N different types of stickers. Each sticker has a lowercase English word on it.
+
+You would like to spell out the given target string by cutting individual letters from your collection of stickers and rearranging them.
+
+You can use each sticker more than once if you want, and you have infinite quantities of each sticker.
+
+What is the minimum number of stickers that you need to spell out the target? If the task is impossible, return -1.
+
+1.stickers has length in the range [1, 50].
+2.stickers consists of lowercase English words (without apostrophes).
+3.target has length in the range [1, 15], and consists of lowercase English letters.
+4.In all test cases, all words were chosen randomly from the 1000 most common US English words, and the target was chosen as a concatenation of two random words.
+5.The time limit may be more challenging than usual. It is expected that a 50 sticker test case can be solved within 35ms on average.
+
+Example 1:
+
+Input:
+["with", "example", "science"], "thehat"
+Output:
+3
+Explanation:
+We can use 2 "with" stickers, and 1 "example" sticker.
+After cutting and rearrange the letters of those stickers, we can form the target "thehat".
+Also, this is the minimum number of stickers necessary to form the target string.
+
+Example 2:
+
+Input:
+["notice", "possible"], "basicbasic"
+Output:
+-1
+Explanation:
+We can't form the target "basicbasic" from cutting letters from the given stickers.
+
+public class Solution {
+    /**
+     * @param stickers: a string array
+     * @param target: a string
+     * @return: the minimum number of stickers that you need to spell out the target
+     */
+     //没剪枝
+    // int min = Integer.MAX_VALUE;
+    // public int minStickers(String[] stickers, String target) {
+    //     // Write your code here
+    //     if (stickers == null || stickers.length == 0 || target == null || target.length() == 0) {return -1;}
+        
+    //     int[] ch = getChar(target);
+    //     helper(stickers, ch, new int[26], 0, target);
+    //     return min == Integer.MAX_VALUE ? -1 : min;
+    // }
+    
+    // void helper(String[] stickers, int[] ch, int[] cur, int size, String target) {
+    //     if (valid(ch, cur)) {
+    //         min = Math.min(min, size);
+    //     }
+                
+    //     if (size >= target.length()) {
+    //         return;
+    //     }
+        
+    //     for (int i = 0; i < stickers.length; i++) {
+    //         for (char c : stickers[i].toCharArray()) {cur[c - 'a']++;}
+    //         size++;
+    //         //System.out.println(size);
+    //         helper(stickers, ch, cur, size, target);
+    //         size--;
+    //         for (char c : stickers[i].toCharArray()) {cur[c - 'a']--;}
+    //     }
+    // }
+    
+    // int[] getChar(String s) {
+    //     int[] rst = new int[26];
+    //     for (char ch : s.toCharArray()) {
+    //         rst[ch-'a']++;
+    //     }
+    //     return rst;
+    // }
+    
+    // boolean valid(int[] ch, int[] cur) {
+    //     for (int i = 0; i < ch.length; i++) {
+    //         if (ch[i] > cur[i]) {return false;}
+    //     }
+    //     return true;
+    // }
+    
+    //剪枝
+    private int count = Integer.MAX_VALUE;
+    
+    public int minStickers(String[] stickers, String target) {
+        // Write your code here
+        int n = stickers.length;
+
+        int[] targetChars = countChar(target);
+        int[][] board = new int[n][26];
+
+        for (int i = 0; i < n; i++) {
+            board[i] = countChar(stickers[i]);
+        }
+        
+        dfs(targetChars, board, 0, 0);
+
+        return count == Integer.MAX_VALUE ? -1: count;
+    }
+
+    private void dfs(int[] targetChars, int[][] board, int n, int preCount) {
+		if (n >= 26) {
+			if(preCount < count && checkTarget(targetChars)) count = preCount;
+			return;
+		}
+		
+		if (targetChars[n] <= 0) {
+			dfs(targetChars, board, n + 1, preCount);
+			return;
+		}
+		
+    	for (int i = 0; i < board.length; i++) {
+    		if (board[i][n] > 0) {
+    			operateTarget(targetChars, board[i], 1);
+    			dfs(targetChars, board, n, preCount + 1);
+    			operateTarget(targetChars, board[i], 2);
+    		}
+		}
+	}
+
+	private void operateTarget(int[] a1, int[] a2, int op) {
+		for (int i = 0; i < 26; i++) {
+			if (op == 2) a1[i] += a2[i];
+			if (op == 1) a1[i] -= a2[i];
+		}
+		
+	}
+
+	private boolean checkTarget(int[] targetChars) {
+		for (int i: targetChars) if (i > 0) return false;
+		return true;
+	}
+
+	private int[] countChar(String string) {
+        int[] result = new int[26];
+        for (char c: string.toCharArray()) result[c - 'a']++;
+        return result;
+    }
+}
+
+
+--Reaching Points
+
+A move consists of taking a point (x, y) and transforming it to either (x, x+y) or (x+y, y).
+
+Given a starting point (sx, sy) and a target point (tx, ty), return True if and only if a sequence of moves exists to transform the point (sx, sy) to (tx, ty). Otherwise, return False.
+
+Example 1:
+
+Input: sx = 1, sy = 1, tx = 3, ty = 5
+Output: True
+Explanation:
+One series of moves that transforms the starting point to the target is:
+(1, 1) -> (1, 2)
+(1, 2) -> (3, 2)
+(3, 2) -> (3, 5)
+Example 2:
+
+Input: sx = 1, sy = 1, tx = 2, ty = 2
+Output: False
+Example 3:
+
+Input: sx = 1, sy = 1, tx = 1, ty = 1
+Output: True
+
+public class Solution {
+    /**
+     * @param sx: x for starting point
+     * @param sy: y for starting point
+     * @param tx: x for target point 
+     * @param ty: y for target point
+     * @return: if a sequence of moves exists to transform the point (sx, sy) to (tx, ty)
+     */
+    public boolean reachingPoints(int sx, int sy, int tx, int ty) {
+        // write your code here
+        while (tx > sx && ty > sy) {
+            if (ty > tx) {
+                ty %= tx;
+            } else {
+                tx %= ty;
+            }
+        }
+        if (tx == sx) return (ty - sy) % sx == 0;
+        if (ty == sy) return (tx - sx) % sy == 0;
+        return false;
+
+    }
+}
+
+
+-- Is Graph Bipartite?
+
+Given an undirected graph, return true if and only if it is bipartite.
+
+Recall that a graph is bipartite if we can split it's set of nodes into two independent subsets A and B such that every edge in the graph has one node in A and another node in B.
+
+The graph is given in the following form: graph[i] is a list of indexes j for which the edge between nodes i and j exists. Each node is an integer between 0 and graph.length - 1. There are no self edges or parallel edges: graph[i] does not contain i, and it doesn't contain any element twice.
+
+1.graph will have length in range [1, 100].
+2.graph[i] will contain integers in range [0, graph.length - 1].
+3.graph[i] will not contain i or duplicate values.
+4.The graph is undirected: if any element j is in graph[i], then i will be in graph[j].
+
+Example 1:
+Input: [[1,3], [0,2], [1,3], [0,2]]
+Output: true
+Explanation: 
+The graph looks like this:
+0----1
+|    |
+|    |
+3----2
+We can divide the vertices into two groups: {0, 2} and {1, 3}.
+Example 2:
+Input: [[1,2,3], [0,2], [0,1,3], [0,2]]
+Output: false
+Explanation: 
+The graph looks like this:
+0----1
+| \  |
+|  \ |
+3----2
+We cannot find a way to divide the set of nodes into two independent subsets.
+
+public class Solution { 
+public boolean isBipartite(int[][] graph) {
+    if (graph==null || graph.length==0) return false;
+        int n = graph.length;
+        int[] visited = new int[n];
+        Queue<Integer> queue = new LinkedList<>();
+        for (int i=0;i<n;i++) {
+            if (visited[i] != 0) continue;
+            if (visited[i] == 0) {
+                visited[i] = 1;
+                queue.offer(i);
+            }
+            while (!queue.isEmpty()) {
+                int pre = queue.poll();
+                for (int j=0;j<graph[pre].length;j++) {
+                    int cur = graph[pre][j];
+                    if (visited[cur]==0) {
+                        visited[cur] = -1*visited[pre];
+                        queue.offer(cur);
+                        continue;
+                    }
+                    if (visited[pre] != -1*visited[cur]) return false;
+                }
+            }
+        }
+        return true;
+    }
+}
+
+
+--Basic Calculator II
+Implement a basic calculator to evaluate a simple expression string.
+
+The expression string contains only non-negative integers, +, -, *, / operators and empty spaces . The integer division should truncate toward zero.
+
+You may assume that the given expression is always valid.
+
+"3+2*2" = 7
+" 3/2 " = 1
+" 3+5 / 2 " = 5
+
+public class Solution {
+    
+    public int calculate(String s) {
+        // Write your code here
+        
+        if (s == null || s.length()==0) {return 0;}
+        
+        int n = s.length(), curRes = 0, res = 0, num = 0;
+        char op = '+';
+        
+        for (int i = 0; i < n; i++) {
+            char c = s.charAt(i);
+            
+            if (Character.isDigit(c)) {
+                num = num * 10 + c - '0';
+            }
+            
+            if (c == '+' || c == '-' || c == '*' || c == '/' || i == n - 1) {
+                switch(op) {
+                    case '+' : curRes += num;break;
+                    case '-' : curRes -= num;break;
+                    case '*' : curRes *= num;break;
+                    case '/' : curRes /= num;break;
+                }
+                
+                if (c == '+' || c == '-' || i == n - 1) {
+                    res += curRes;
+                    curRes = 0;
+                }
+                
+                op = c;
+                num = 0;
+            }
+        }
+        
+        return res;
+        
+    }
+}
+
+
+-- 2 Keys Keyboard
+Initially on a notepad only one character 'A' is present. You can perform two operations on this notepad for each step:
+
+1.Copy All: You can copy all the characters present on the notepad (partial copy is not allowed).
+2.Paste: You can paste the characters which are copied last time.
+Given a number n. You have to get exactly n 'A' on the notepad by performing the minimum number of steps permitted. Output the minimum number of steps to get n 'A'.
+
+Input: 3
+Output: 3
+Explanation:
+Intitally, we have one character 'A'.
+In step 1, we use Copy All operation.
+In step 2, we use Paste operation to get 'AA'.
+In step 3, we use Paste operation to get 'AAA'.
+
+
+public class Solution {
+    /**
+     * @param n: The number of 'A'
+     * @return: the minimum number of steps to get n 'A'
+     */
+       public int minSteps(int n) {
+        int[] dp = new int[n+1];
+ 
+        for (int i = 2; i <= n; i++) {
+            dp[i] = i;
+            for (int j = i-1; j > 1; j--) {
+                if (i % j == 0) {
+                    dp[i] = dp[j] + (i/j);
+                    break;
+                }
+                
+            }
+        }
+        return dp[n];
+    }
+}
+
+
+--Task Scheduler
+Given a char array representing tasks CPU need to do. It contains capital letters A to Z where different letters represent different tasks.Tasks could be done without original order. Each task could be done in one interval. For each interval, CPU could finish one task or just be idle.
+
+However, there is a non-negative cooling interval n that means between two same tasks, there must be at least n intervals that CPU are doing different tasks or just be idle.
+
+You need to return the least number of intervals the CPU will take to finish all the given tasks.
+
+
+Given tasks = ['A','A','A','B','B','B'], n = 2, return 8.
+
+Explanation: 
+A -> B -> idle -> A -> B -> idle -> A -> B.
+
+
+public class Solution {
+    /**
+     * @param tasks: the given char array representing tasks CPU need to do
+     * @param n: the non-negative cooling interval
+     * @return: the least number of intervals the CPU will take to finish all the given tasks
+     */
+    public int leastInterval(char[] tasks, int n) {
+        // write your code here
+        int[] c = new int[26];
+        for (char ch : tasks) {c[ch - 'A']++;}
+        
+        Arrays.sort(c);
+        int i = 25;
+        while(i >= 0 && c[i] == c[25]) {i--;}
+        
+        return Math.max(tasks.length, (c[25] - 1)*(n + 1) +  (25- i));
+    }
+}
+
+
+--Flip Game II
+
+You are playing the following Flip Game with your friend: Given a string that contains only these two characters: + and -, you and your friend take turns to flip two consecutive "++" into "--". The game ends when a person can no longer make a move and therefore the other person will be the winner.
+
+Write a function to determine if the starting player can guarantee a win.
+
+
+Example
+Given s = "++++", return true.
+
+Explanation:
+The starting player can guarantee a win by flipping the middle "++" to become "+--+".
+
+public class Solution {
+    /**
+     * @param s: the given string
+     * @return: if the starting player can guarantee a win
+     */
+    public boolean canWin(String s) {
+        // write your code here
+        if (s == null || s.length() < 2) {return false;}
+        
+        char[] arr = s.toCharArray();
+        return dfs(arr);
+    }
+    
+    boolean dfs(char[] arr) {
+        for (int i = 0; i < arr.length-1; i++) {
+            if (arr[i] == '+' && arr[i+1] == '+') {
+                arr[i] = '-';
+                arr[i+1] = '-';
+                boolean next = dfs(arr);
+                arr[i] = '+';
+                arr[i+1] = '+';
+                if (!next) {return true;}
+            }
+        }
+        return false;
+    }
+}
+
+
+--Closest Binary Search Tree Value II
+Given a non-empty binary search tree and a target value, find k values in the BST that are closest to the target.
+
+1.Given target value is a floating point.
+2.You may assume k is always valid, that is: k ≤ total nodes.
+3.You are guaranteed to have only one unique set of k values in the BST that are closest to the target.
+
+Example
+Given root = {1}, target = 0.000000, k = 1, return [1].
+
+public class Solution {
+    /**
+     * @param root: the given BST
+     * @param target: the given target
+     * @param k: the given k
+     * @return: k values in the BST that are closest to the target
+     */
+     
+    List<Double> abs;
+    List<Integer> rst;
+    public List<Integer> closestKValues(TreeNode root, double target, int k) {
+        // write your code here
+        abs = new ArrayList<>();
+        rst = new ArrayList<>();
+        helper(root, target, k);
+        return rst;
+    }
+    
+    void helper(TreeNode root, double target, int k) {
+        if (root == null) {return;}
+        
+        helper(root.left, target, k);
+        
+        if (abs.size() < k) {
+            abs.add(Math.abs(root.val - target));
+            rst.add(root.val);
+        } else {
+            double tmp = Math.abs(root.val - target);
+            if (tmp < abs.get(0)) {
+                abs.remove(0);
+                rst.remove(0);
+                abs.add(tmp);
+                rst.add(root.val);
+            }
+        }
+        
+        helper(root.right, target, k);
+    }
+}
+
+
+--Convex Polygon
+
+
+Given a list of points that form a polygon when joined sequentially, find if this polygon is convex (Convex polygon definition).
+
+1.There are at least 3 and at most 10,000 points.
+2.Coordinates are in the range -10,000 to 10,000.
+3.You may assume the polygon formed by given points is always a simple polygon (Simple polygon definition). In other words, we ensure that exactly two edges intersect at each vertex, and that edges otherwise don't intersect each other.
+
+Example
+Given points = [[0, 0], [0, 1], [1, 1], [1, 0]],
+return True.
+
+Given points = [[0, 0], [0, 10], [10, 10], [10, 0], [5, 5]],
+return False.
+
+public class Solution {
+    /**
+     * @param point: a list of two-tuples
+     * @return: a boolean, denote whether the polygon is convex
+     */
+    public boolean isConvex(int[][] point) {
+        // write your code here
+        
+        int[][] arr = new int[point.length + 2][2];
+        for (int i = 0; i < point.length; i++) {arr[i] = point[i];}
+        arr[point.length] = point[0];
+        arr[point.length+1] = point[1];
+        
+        long n = arr.length, pre = 0, cur = 0;
+        
+        // for (int i = 0; i < arr.length-2; i++) {
+        //     int[] tmp1 = arr[i];
+        //     int[] tmp2 = arr[i+1];
+        //     int[] tmp3 = arr[i+2];
+            
+        //     if (tmp3[0] == tmp1[0]) {
+        //         if (tmp2[0] > tmp1[0]) {return false;}
+        //     } else {
+        //         int y = (tmp3[1]-tmp1[1])*(tmp2[0]-tmp1[0])/(tmp3[0]-tmp1[0]) + tmp1[1];
+        //         if (convex == 0) {
+        //             convex += (tmp2[1] >= y ? 1 : -1);
+        //         } else {
+        //             if (convex != (tmp2[1] >= y ? 1 : -1)) {return false;}
+        //         }
+                
+        //     }
+            
+        // }
+        
+        for (int i = 0; i < arr.length-2; i++) {
+            int[] tmp1 = arr[i];
+            int[] tmp2 = arr[i+1];
+            int[] tmp3 = arr[i+2];
+            
+            int dx1 = tmp2[0]-tmp1[0];
+            int dy1 = tmp2[1]-tmp1[1];
+            int dx2 = tmp3[0]-tmp1[0];
+            int dy2 = tmp3[1]-tmp1[1];
+            
+            cur = dx1 * dy2 - dx2 * dy1;
+            if (cur != 0) {
+                if (cur * pre < 0) return false;
+                else pre = cur;
+            }
+            
+        }
+        
+        return true;
+    }
+}
+
+
+--4 Keys Keyboard
+
+Description
+Imagine you have a special keyboard with the following keys:
+
+Key 1: (A): Print one 'A' on screen.
+
+Key 2: (Ctrl-A): Select the whole screen.
+
+Key 3: (Ctrl-C): Copy selection to buffer.
+
+Key 4: (Ctrl-V): Print buffer on screen appending it after what has already been printed.
+
+Now, you can only press the keyboard for N times (with the above four keys), find out the maximum numbers of 'A' you can print on screen.
+
+
+
+Example
+Given N = 3, return 3.
+
+Explanation: 
+We can at most get 3 A's on screen by pressing following key sequence:
+A, A, A
+Given N = 7, return 9.
+
+Explanation: 
+We can at most get 9 A's on screen by pressing following key sequence:
+A, A, A, Ctrl A, Ctrl C, Ctrl V, Ctrl V
+
+public class Solution {
+    /**
+     * @param N: an integer
+     * @return: return an integer
+     */
+    public int maxA(int N) {
+        // write your code here
+        int[] dp = new int[N+1];
+        for(int i=1;i<=N;i++){
+            dp[i] = i;
+            for(int j=3;j<i;j++){
+                dp[i] = Math.max(dp[i], dp[i-j] * (j-1));
+            }
+        }
+        return dp[N];
+    }
+}
+
+
+-- K Empty Slots
+
+Description
+There is a garden with N slots. In each slot, there is a flower. The N flowers will bloom one by one in N days. In each day, there will be exactly one flower blooming and it will be in the status of blooming since then.
+
+Given an array flowers consists of number from 1 to N. Each number in the array represents the place where the flower will open in that day.
+
+For example, flowers[i] = x means that the unique flower that blooms at day i will be at position x, where i and x will be in the range from 1 to N.
+
+Also given an integer k, you need to output in which day there exists two flowers in the status of blooming, and also the number of flowers between them is k and these flowers are not blooming.
+
+If there isn't such day, output -1.
+
+Example
+Given flowers = [1,3,2], k = 1, return 2.
+
+Explanation: 
+In the second day, the first and the third flower have become blooming.
+Given flowers = [1,2,3], k = 1, return -1.
+
+public class Solution {
+    /**
+     * @param flowers: the place where the flower will open in that day
+     * @param k:  an integer
+     * @return: in which day meet the requirements
+     */
+     //1. bucket 2. bst 3. k-window
+    public int kEmptySlots(int[] flowers, int k) {
+        // Write your code here
+        int n = flowers.length;
+        int[] days = new int[n];
+        for (int i = 0; i < n; i++) {days[flowers[i]-1] = i+1;}
+        
+        int l = 0, r = k+1, res = Integer.MAX_VALUE;
+        for (int i = 0; r < n; i++) {
+            if (days[i] < days[l] || days[r] >= days[i]) {
+                if (i == r) {
+                    res = Math.min(res, Math.max(days[r], days[l]));
+                }
+                l = i;
+                r = i + 1 + k;
+            }
+        }
+        return res == Integer.MAX_VALUE ? -1 : res;
+    }
+}
+
+
+--Basic Calculator III
+
+Description
+Implement a basic calculator to evaluate a simple expression string.
+
+The expression string may contain open ( and closing parentheses ), the plus + or minus sign -, non-negative integers and empty spaces .
+
+The expression string contains only non-negative integers, +, -, *, / operators , open ( and closing parentheses ) and empty spaces . The integer division should truncate toward zero.
+
+You may assume that the given expression is always valid. All intermediate results will be in the range of [-2147483648, 2147483647]
+
+Example
+"1 + 1" = 2
+" 6-4 / 2 " = 4
+"2*(5+5*2)/3+(6/2+8)" = 21
+"(2+6* 3+5- (3*14/7+2)*5)+3"=-12
+
+public class Solution {
+    /**
+     * @param s: the expression string
+     * @return: the answer
+     */
+    public int calculate(String s) {
+        // Write your code here
+        
+        if (s == null || s.length()==0) {return 0;}
+        
+        int n = s.length(), curRes = 0, res = 0, num = 0;
+        char op = '+';
+        
+        for (int i = 0; i < n; i++) {
+            char c = s.charAt(i);
+            
+            if (Character.isDigit(c)) {
+                num = num * 10 + c - '0';
+            } else if (c == '(') {
+                int j = i, cnt = 0;
+                for (;i < n; i++) {
+                    if (s.charAt(i) == '(') {cnt++;}
+                    if (s.charAt(i) == ')') {cnt--;}
+                    if (cnt == 0) {break;}
+                }
+                num = calculate(s.substring(j+1,i));
+            } 
+            
+            if (c == '+' || c == '-' || c == '*' || c == '/' || i == n - 1) {
+                switch(op) {
+                    case '+' : curRes += num;break;
+                    case '-' : curRes -= num;break;
+                    case '*' : curRes *= num;break;
+                    case '/' : curRes /= num;break;
+                }
+                
+                if (c == '+' || c == '-' || i == n - 1) {
+                    res += curRes;
+                    curRes = 0;
+                }
+                
+                op = c;
+                num = 0;
+            }
+        }
+        
+        return res;
+        
+    }
+    
+   
+}
+
+
+--Word Pattern II
+
+Given a pattern and a string str, find if str follows the same pattern.
+
+Here follow means a full match, such that there is a bijection between a letter in pattern and a non-empty substring in str.(i.e if a corresponds to s, then b cannot correspond to s. For example, given pattern = "ab", str = "ss", return false.)
+
+
+Example
+Given pattern = "abab", str = "redblueredblue", return true.
+Given pattern = "aaaa", str = "asdasdasdasd", return true.
+Given pattern = "aabb", str = "xyzabcxzyabc", return false.
+
+public class Solution {
+    /**
+     * @param pattern: a string,denote pattern string
+     * @param str: a string, denote matching string
+     * @return: a boolean
+     */
+     
+     //boolean isMatch = false;
+    public boolean wordPatternMatch(String pattern, String str) {
+        // write your code here
+        if(pattern == null || pattern.length() == 0 || str == null || str.length() == 0) {return false;}
+        
+        Map<Character, String> map = new HashMap<>();
+        HashSet<String> set = new HashSet<>();
+        
+        
+        return dfs(pattern, 0, str, 0, map,set );
+    }
+    
+    boolean dfs(String pattern, int pidx, String str, int sidx, Map<Character, String> map,HashSet<String> set) {
+        if (pidx >= pattern.length() && sidx >= pattern.length()) {return true;}
+        
+        char ch = pattern.charAt(pidx);
+        if (map.containsKey(ch)) {
+            String tmp = map.get(ch);
+            if ((sidx+tmp.length() <= str.length()) && str.substring(sidx, sidx+tmp.length()).equals(tmp)) {
+                return dfs(pattern, pidx+1, str, sidx+tmp.length(), map,set);
+            } else {return false;}
+        } else {
+            for (int i = sidx+1; i <= str.length(); i++) {
+                String tmp = str.substring(sidx,i);
+                if (!set.contains(tmp)) {
+                    map.put(ch, tmp);
+                    set.add(tmp);
+                    if (dfs(pattern, pidx+1, str, i, map,set)) {return true;}
+                    map.remove(ch);
+                    set.remove(tmp);
+                }
+            }
+        }
+        return false;
+    }
+}
+
+--Android Unlock Patterns
+
+Given an Android 3x3 key lock screen and two integers m and n, where 1 ≤ m ≤ n ≤ 9, count the total number of unlock patterns of the Android lock screen, which consist of minimum of m keys and maximum n keys.
+
+Rules for a valid pattern:
+
+1.Each pattern must connect at least m keys and at most n keys.
+2.All the keys must be distinct.
+3.If the line connecting two consecutive keys in the pattern passes through any other keys, the other keys must have previously selected in the pattern. No jumps through non selected key is allowed.
+4.The order of keys used matters.
+
+Invalid move: 4 - 1 - 3 - 6
+Line 1 - 3 passes through key 2 which had not been selected in the pattern.
+
+Invalid move: 4 - 1 - 9 - 2
+Line 1 - 9 passes through key 5 which had not been selected in the pattern.
+
+Valid move: 2 - 4 - 1 - 3 - 6
+Line 1 - 3 is valid because it passes through key 2, which had been selected in the pattern
+
+Valid move: 6 - 5 - 4 - 1 - 9 - 2
+Line 1 - 9 is valid because it passes through key 5, which had been selected in the pattern.
+
+public class Solution {
+public int numberOfPatterns(int m, int n) {
+        // Write your code here
+        if (m > n || m < 0 || n > 9) return 0;
+        
+        int[][] skip = new int[10][10];
+        skip[1][3] = skip[3][1] = 2;
+        skip[1][7] = skip[7][1] = 4;
+        skip[3][9] = skip[9][3] = 6;
+        skip[7][9] = skip[9][7] = 8;
+        skip[2][8] = skip[8][2] = skip[4][6] = skip[6][4] = skip[1][9] = skip[9][1] = skip[3][7] = skip[7][3] = 5;
+        
+        boolean[] visited = new boolean[10];
+        int res = 0;
+        for (int i = m; i <= n; i++) {
+            res += help(visited, skip, 1, i - 1) * 4;
+            res += help(visited, skip, 2, i - 1) * 4;
+            res += help(visited, skip, 5, i - 1);
+        }
+        
+        return res;
+    
+    }
+    
+    public int help(boolean[] visited, int[][] skip, int cur, int remain) {
+        if (remain < 0) return 0;
+        if (remain == 0) return 1;
+        
+        visited[cur] = true;
+        
+        int res = 0;
+        for (int i = 1; i <= 9; i++) {
+            if (!visited[i] && (skip[cur][i] == 0 || visited[skip[cur][i]]))
+                res += help(visited, skip, i, remain - 1);
+        }
+        
+        visited[cur] = false;
+        return res;
+    }
+    
+}
