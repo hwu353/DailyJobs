@@ -1,0 +1,1327 @@
+21.Basic Calculator II
+Medium
+
+585
+
+90
+
+Favorite
+
+Share
+Implement a basic calculator to evaluate a simple expression string.
+
+The expression string contains only non-negative integers, +, -, *, / operators and empty spaces . The integer division should truncate toward zero.
+
+Example 1:
+
+Input: "3+2*2"
+Output: 7
+Example 2:
+
+Input: " 3/2 "
+Output: 1
+Example 3:
+
+Input: " 3+5 / 2 "
+Output: 5
+Note:
+
+You may assume that the given expression is always valid.
+Do not use the eval built-in library function.
+
+class Solution {
+    public int calculate(String s) {
+        if (s == null || s.length() == 0) {return 0;}
+        
+        s = s.replace(" ", "");
+        Stack<Integer> stack = new Stack<>();
+        int num = 0;
+        char sign = '+';
+        
+        for (int i = 0; i < s.length(); i++) {
+            char ch = s.charAt(i);
+            if (Character.isDigit(ch)) {
+                num = num*10 + ch - '0';
+            } 
+            if ((!Character.isDigit(ch)) || (i == s.length()-1)) {
+                if (sign == '+') {
+                    stack.push(num);
+                }
+                if (sign == '-') {
+                    stack.push(-1 * num);
+                }
+                if (sign == '*') {
+                    stack.push(num*stack.pop());
+                }
+                if (sign == '/') {
+                    stack.push(stack.pop()/num);
+                }
+                num = 0;
+                sign = ch;
+            }
+        } 
+        int res = 0;
+        for (int i: stack) {res += i;}
+        return res;
+    }
+}
+
+22.Sliding Window Maximum
+Hard
+
+1446
+
+85
+
+Favorite
+
+Share
+Given an array nums, there is a sliding window of size k which is moving from the very left of the array to the very right. You can only see the k numbers in the window. Each time the sliding window moves right by one position. Return the max sliding window.
+
+Example:
+
+Input: nums = [1,3,-1,-3,5,3,6,7], and k = 3
+Output: [3,3,5,5,6,7] 
+Explanation: 
+
+Window position                Max
+---------------               -----
+[1  3  -1] -3  5  3  6  7       3
+ 1 [3  -1  -3] 5  3  6  7       3
+ 1  3 [-1  -3  5] 3  6  7       5
+ 1  3  -1 [-3  5  3] 6  7       5
+ 1  3  -1  -3 [5  3  6] 7       6
+ 1  3  -1  -3  5 [3  6  7]      7
+Note: 
+You may assume k is always valid, 1 ≤ k ≤ input array's size for non-empty array.
+
+Follow up:
+Could you solve it in linear time?
+
+class Solution {
+    public int[] maxSlidingWindow(int[] a, int k) {
+        if (a == null || k <= 0) {
+			return new int[0];
+		}
+		int n = a.length;
+		int[] r = new int[n-k+1];
+		int ri = 0;
+		// store index
+		Deque<Integer> q = new ArrayDeque<>();
+        
+        for (int i = 0; i < a.length; i++) {
+            while (!q.isEmpty() && q.peek() < i - k + 1) {
+                q.poll();
+            }
+            
+            while (!q.isEmpty() && a[q.peekLast()] < a[i]) {
+                q.pollLast();
+            }
+            
+            q.offer(i);
+            if (i >= k-1) {
+                r[ri++] = a[q.peek()];
+            }
+        }
+        return r;
+    }
+}
+
+23.Search a 2D Matrix II
+Medium
+
+1329
+
+38
+
+Favorite
+
+Share
+Write an efficient algorithm that searches for a value in an m x n matrix. This matrix has the following properties:
+
+Integers in each row are sorted in ascending from left to right.
+Integers in each column are sorted in ascending from top to bottom.
+Example:
+
+Consider the following matrix:
+
+[
+  [1,   4,  7, 11, 15],
+  [2,   5,  8, 12, 19],
+  [3,   6,  9, 16, 22],
+  [10, 13, 14, 17, 24],
+  [18, 21, 23, 26, 30]
+]
+Given target = 5, return true.
+
+Given target = 20, return false.
+
+class Solution {
+    public boolean searchMatrix(int[][] matrix, int target) {
+        if(matrix == null || matrix.length < 1 || matrix[0].length <1) {
+            return false;
+        }
+        int col = matrix[0].length-1;
+        int row = 0;
+        while(col >= 0 && row <= matrix.length-1) {
+            if(target == matrix[row][col]) {
+                return true;
+            } else if(target < matrix[row][col]) {
+                col--;
+            } else if(target > matrix[row][col]) {
+                row++;
+            }
+        }
+        return false;
+    }
+}
+
+24.Expression Add Operators
+Hard
+
+599
+
+88
+
+Favorite
+
+Share
+Given a string that contains only digits 0-9 and a target value, return all possibilities to add binary operators (not unary) +, -, or * between the digits so they evaluate to the target value.
+
+Example 1:
+
+Input: num = "123", target = 6
+Output: ["1+2+3", "1*2*3"] 
+Example 2:
+
+Input: num = "232", target = 8
+Output: ["2*3+2", "2+3*2"]
+Example 3:
+
+Input: num = "105", target = 5
+Output: ["1*0+5","10-5"]
+Example 4:
+
+Input: num = "00", target = 0
+Output: ["0+0", "0-0", "0*0"]
+Example 5:
+
+Input: num = "3456237490", target = 9191
+Output: []
+
+class Solution {
+    public List<String> addOperators(String num, int target) {
+        Set<String> ans = new HashSet<>();
+        if (num == null || num.length() == 0) {return new ArrayList<>(ans);}
+        
+        dfs(ans, "",num, target, 0, 0, 0);
+        
+        return new ArrayList<String>(ans);
+    }
+    
+    void dfs(Set<String> ans, String s, String num, int target, int index, long eval, long multed) {
+        if (index == num.length()) {
+            if (target == eval) {
+                ans.add(s);
+            }
+            return;
+        }
+        
+        for (int i = index; i < num.length(); i++) {
+            if (i != index && num.charAt(index) == '0') {break;}
+            
+            long cur = Long.parseLong(num.substring(index, i+1));
+            
+            if (index == 0) {
+                
+                dfs(ans, s + cur, num, target, i+1, cur, cur);
+                
+            } else {
+                dfs(ans, s + "+" + cur, num, target, i+1, eval + cur, cur);
+                
+                dfs(ans, s + "-" + cur, num, target, i+1, eval - cur, -cur);
+                
+                dfs(ans, s + "*" + cur, num, target, i+1, eval - multed + multed * cur, multed * cur);
+            }
+        }
+    }
+    
+}
+
+25.Find the Duplicate Number
+Medium
+
+2161
+
+237
+
+Favorite
+
+Share
+Given an array nums containing n + 1 integers where each integer is between 1 and n (inclusive), prove that at least one duplicate number must exist. Assume that there is only one duplicate number, find the duplicate one.
+
+Example 1:
+
+Input: [1,3,4,2,2]
+Output: 2
+Example 2:
+
+Input: [3,1,3,4,2]
+Output: 3
+Note:
+
+You must not modify the array (assume the array is read only).
+You must use only constant, O(1) extra space.
+Your runtime complexity should be less than O(n2).
+There is only one duplicate number in the array, but it could be repeated more than once.
+
+class Solution {
+    public int findDuplicate(int[] nums) {
+        int len = nums.length;
+        
+        if (len > 1) {
+            int fast = nums[nums[0]];
+            int slow = nums[0];
+            
+            while (fast != slow) {
+                fast = nums[nums[fast]];
+                slow = nums[slow];
+            }
+            
+            fast = 0;
+            while (fast != slow) {
+                fast = nums[fast];
+                slow = nums[slow];
+            }
+            return slow;
+        }
+        
+        return -1;
+    }
+}
+
+26.Number of Islands II
+Hard
+
+480
+
+7
+
+Favorite
+
+Share
+A 2d grid map of m rows and n columns is initially filled with water. We may perform an addLand operation which turns the water at position (row, col) into a land. Given a list of positions to operate, count the number of islands after each addLand operation. An island is surrounded by water and is formed by connecting adjacent lands horizontally or vertically. You may assume all four edges of the grid are all surrounded by water.
+
+Example:
+
+Input: m = 3, n = 3, positions = [[0,0], [0,1], [1,2], [2,1]]
+Output: [1,1,2,3]
+Explanation:
+
+Initially, the 2d grid grid is filled with water. (Assume 0 represents water and 1 represents land).
+
+0 0 0
+0 0 0
+0 0 0
+Operation #1: addLand(0, 0) turns the water at grid[0][0] into a land.
+
+1 0 0
+0 0 0   Number of islands = 1
+0 0 0
+Operation #2: addLand(0, 1) turns the water at grid[0][1] into a land.
+
+1 1 0
+0 0 0   Number of islands = 1
+0 0 0
+Operation #3: addLand(1, 2) turns the water at grid[1][2] into a land.
+
+1 1 0
+0 0 1   Number of islands = 2
+0 0 0
+Operation #4: addLand(2, 1) turns the water at grid[2][1] into a land.
+
+1 1 0
+0 0 1   Number of islands = 3
+0 1 0
+Follow up:
+
+Can you do it in time complexity O(k log mn), where k is the length of the positions?
+
+int[][] dirs = {{0, 1}, {1, 0}, {-1, 0}, {0, -1}};
+
+public List<Integer> numIslands2(int m, int n, int[][] positions) {
+    List<Integer> result = new ArrayList<>();
+    if(m <= 0 || n <= 0) return result;
+
+    int count = 0;                      // number of islands
+    int[] roots = new int[m * n];       // one island = one tree
+    Arrays.fill(roots, -1);            
+
+    for(int[] p : positions) {
+        int root = n * p[0] + p[1];     // assume new point is isolated island
+        roots[root] = root;             // add new island
+        count++;
+
+        for(int[] dir : dirs) {
+            int x = p[0] + dir[0]; 
+            int y = p[1] + dir[1];
+            int nb = n * x + y;
+            if(x < 0 || x >= m || y < 0 || y >= n || roots[nb] == -1) continue;
+            
+            int rootNb = findIsland(roots, nb);
+            if(root != rootNb) {        // if neighbor is in another island
+                roots[root] = rootNb;   // union two islands 
+                root = rootNb;          // current tree root = joined tree root
+                count--;               
+            }
+        }
+
+        result.add(count);
+    }
+    return result;
+}
+
+public int findIsland(int[] roots, int id) {
+    while(id != roots[id]) id = roots[id];
+    return id;
+}
+
+27.Range Sum Query - Mutable
+Medium
+
+627
+
+51
+
+Favorite
+
+Share
+Given an integer array nums, find the sum of the elements between indices i and j (i ≤ j), inclusive.
+
+The update(i, val) function modifies nums by updating the element at index i to val.
+
+Example:
+
+Given nums = [1, 3, 5]
+
+sumRange(0, 2) -> 9
+update(1, 2)
+sumRange(0, 2) -> 8
+Note:
+
+The array is only modifiable by the update function.
+You may assume the number of calls to update and sumRange function is distributed evenly.
+
+class NumArray {
+    
+    class SegmentTreeNode {
+        public int start, end, sum;
+        public SegmentTreeNode left, right;
+        public SegmentTreeNode(int start, int end) {
+            this.start = start;
+            this.end = end;
+            this.sum = 0;
+            this.left = this.right = null;
+        }
+    }
+    
+    public SegmentTreeNode treeBuild(int[] nums, int start, int end) {
+        if (end < start) {return null;}
+        SegmentTreeNode root = new SegmentTreeNode(start, end);
+        
+        if (end == start) {
+            root.sum = nums[start];
+        } else {
+            int mid = start + (end - start)/2;
+            root.left = treeBuild(nums, start, mid);
+            root.right = treeBuild(nums, mid+1, end);
+            root.sum = root.left.sum + root.right.sum;
+        }
+        
+        return root;
+    }
+    
+    public void treeUpdate(SegmentTreeNode root, int index, int value) {
+        if (root.start == index && root.end == index) {
+            root.sum = value;
+            return;
+        }
+        
+        int mid = root.start + (root.end - root.start)/2;
+        if (root.start <= index && index <= mid) {
+            treeUpdate(root.left, index, value);
+        }
+        if (mid < index && index <= root.end) {
+            treeUpdate(root.right, index, value);
+        }
+        root.sum = root.left.sum + root.right.sum;
+    }
+    
+    public int treeQuery(SegmentTreeNode root, int start, int end) {
+        if (root.start == start && root.end == end) {return root.sum;}
+        
+        int mid = root.start + (root.end - root.start)/2;
+        int leftSum = 0, rightSum = 0;
+        if (start <= mid) {
+            if (end > mid) {
+                leftSum =  treeQuery(root.left, start, mid);
+            } else {
+                leftSum =  treeQuery(root.left, start, end);
+            }
+        }
+        
+        if (end > mid) {
+            if (start <= mid) {
+                rightSum = treeQuery(root.right, mid+1, end);
+            } else {
+                rightSum = treeQuery(root.right, start, end);
+            }
+        }
+        return leftSum+rightSum;
+    }
+    
+    SegmentTreeNode root;
+    public NumArray(int[] nums) {
+        root = treeBuild(nums, 0, nums.length - 1);
+    }
+    
+    public void update(int i, int val) {
+        treeUpdate(root, i, val);
+    }
+    
+    public int sumRange(int i, int j) {
+        return treeQuery(root, i, j);
+    }
+}
+
+28. Best Time to Buy and Sell Stock with Cooldown
+Medium
+
+1166
+
+41
+
+Favorite
+
+Share
+Say you have an array for which the ith element is the price of a given stock on day i.
+
+Design an algorithm to find the maximum profit. You may complete as many transactions as you like (ie, buy one and sell one share of the stock multiple times) with the following restrictions:
+
+You may not engage in multiple transactions at the same time (ie, you must sell the stock before you buy again).
+After you sell your stock, you cannot buy stock on next day. (ie, cooldown 1 day)
+Example:
+
+Input: [1,2,3,0,2]
+Output: 3 
+Explanation: transactions = [buy, sell, cooldown, buy, sell]
+
+class Solution {
+    public int maxProfit(int[] prices) {
+        if (prices == null || prices.length == 0) {return 0;}
+        int n = prices.length;
+        int[] s0 = new int[n];
+        int[] s1 = new int[n];
+        int[] s2 = new int[n];
+        s0[0] = 0;
+        s1[0] = -prices[0];
+        s2[0] = Integer.MIN_VALUE;
+        
+        for (int i = 1; i < n; i++) {
+            s0[i] = Math.max(s0[i-1], s2[i-1]);
+            s1[i] = Math.max(s1[i-1], s0[i-1]-prices[i]);
+            s2[i] = s1[i-1] + prices[i];
+        }
+        
+        return Math.max(s0[n-1], s2[n-1]);
+    }
+}
+
+29. Minimum Height Trees
+Medium
+
+849
+
+48
+
+Favorite
+
+Share
+For an undirected graph with tree characteristics, we can choose any node as the root. The result graph is then a rooted tree. Among all possible rooted trees, those with minimum height are called minimum height trees (MHTs). Given such a graph, write a function to find all the MHTs and return a list of their root labels.
+
+Format
+The graph contains n nodes which are labeled from 0 to n - 1. You will be given the number n and a list of undirected edges (each edge is a pair of labels).
+
+You can assume that no duplicate edges will appear in edges. Since all edges are undirected, [0, 1] is the same as [1, 0] and thus will not appear together in edges.
+
+Example 1 :
+
+Input: n = 4, edges = [[1, 0], [1, 2], [1, 3]]
+
+        0
+        |
+        1
+       / \
+      2   3 
+
+Output: [1]
+Example 2 :
+
+Input: n = 6, edges = [[0, 3], [1, 3], [2, 3], [4, 3], [5, 4]]
+
+     0  1  2
+      \ | /
+        3
+        |
+        4
+        |
+        5 
+
+Output: [3, 4]
+Note:
+
+According to the definition of tree on Wikipedia: “a tree is an undirected graph in which any two vertices are connected by exactly one path. In other words, any connected graph without simple cycles is a tree.”
+The height of a rooted tree is the number of edges on the longest downward path between the root and a leaf.
+
+
+class Solution {
+    public List<Integer> findMinHeightTrees(int n, int[][] edges) {
+        List<Integer> res = new ArrayList<>();
+        if (edges == null || edges.length == 0 || edges[0] == null || edges[0].length == 0 || n <= 0) {
+             res.add(0);
+             return res;
+        }
+        
+        Map<Integer, Set<Integer>> map = new HashMap<Integer, Set<Integer>>();
+        for(int[] edge: edges) {
+            int e1 = edge[0];
+            int e2 = edge[1];
+            if (!map.containsKey(e1)) {
+                map.put(e1, new HashSet<Integer>());
+            }
+            if (!map.containsKey(e2)) {
+                map.put(e2, new HashSet<Integer>());
+            }
+            map.get(e1).add(e2);
+            map.get(e2).add(e1);
+        }
+        
+        List<Integer> leaves = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            if (map.get(i).size() == 1) {
+                leaves.add(i);
+            }
+        }
+        
+        int count = n;
+        while (count > 2) {
+            count = count - leaves.size();
+            List<Integer> newLeaves = new ArrayList<>();
+            
+            for (int i = 0; i < leaves.size(); i++) {
+                int leaf = leaves.get(i);
+                for (Integer neigbor: map.get(leaf)) {
+                    map.get(neigbor).remove(leaf);
+                    if(map.get(neigbor).size() == 1) {
+                        newLeaves.add(neigbor);
+                    }
+                }
+            }
+            leaves = newLeaves;
+        }
+        
+        return leaves;
+    }
+}
+
+30.Super Ugly Number
+Medium
+
+327
+
+84
+
+Favorite
+
+Share
+Write a program to find the nth super ugly number.
+
+Super ugly numbers are positive numbers whose all prime factors are in the given prime list primes of size k.
+
+Example:
+
+Input: n = 12, primes = [2,7,13,19]
+Output: 32 
+Explanation: [1,2,4,7,8,13,14,16,19,26,28,32] is the sequence of the first 12 
+             super ugly numbers given primes = [2,7,13,19] of size 4.
+Note:
+
+1 is a super ugly number for any given primes.
+The given numbers in primes are in ascending order.
+0 < k ≤ 100, 0 < n ≤ 106, 0 < primes[i] < 1000.
+The nth super ugly number is guaranteed to fit in a 32-bit signed integer.
+
+class Solution {
+    public int nthSuperUglyNumber(int n, int[] primes) {
+        int[] ugly = new int[n];
+        int[] idx = new int[primes.length];
+
+        ugly[0] = 1;
+        for (int i = 1; i < n; i++) {
+            //find next
+            ugly[i] = Integer.MAX_VALUE;
+            for (int j = 0; j < primes.length; j++)
+                ugly[i] = Math.min(ugly[i], primes[j] * ugly[idx[j]]);
+
+            //slip duplicate
+            for (int j = 0; j < primes.length; j++) {
+                while (primes[j] * ugly[idx[j]] == ugly[i]) idx[j]++;
+            }
+        }
+
+        return ugly[n - 1];
+    }
+}
+
+31.Count of Smaller Numbers After Self
+Hard
+
+983
+
+41
+
+Favorite
+
+Share
+You are given an integer array nums and you have to return a new counts array. The counts array has the property where counts[i] is the number of smaller elements to the right of nums[i].
+
+Example:
+
+Input: [5,2,6,1]
+Output: [2,1,1,0] 
+Explanation:
+To the right of 5 there are 2 smaller elements (2 and 1).
+To the right of 2 there is only 1 smaller element (1).
+To the right of 6 there is 1 smaller element (1).
+To the right of 1 there is 0 smaller element.
+
+class Solution {
+    class SegmentTreeNode {
+        int min,max,count;
+        SegmentTreeNode left, right;
+        int mid() {
+            return ((max - min) / 2 + min);
+        }
+        SegmentTreeNode (int s, int e) {
+            min = s;
+            max = e;
+            count = 0;
+        }
+    }
+    
+    int find(int num, SegmentTreeNode root) {
+        if (root == null) {return 0;}
+        if (root.max < num) {return root.count;}
+        else {
+            int mid = root.mid();
+            if (num <= mid) {
+                return find(num, root.left);
+            } else {
+                return find(num, root.left) + find(num, root.right);
+            }
+        }
+    }
+    
+    void add(int x, SegmentTreeNode root) {
+        if (x < root.min || x > root.max) return;
+        root.count++;
+        if (root.min == root.max) {return;}
+        
+        int mid = root.mid();
+        if (x <= mid) {
+            if (root.left == null) {
+                root.left = new SegmentTreeNode(root.min, mid);
+            }
+            add(x, root.left);
+        } else {
+            if (root.right == null) {
+                root.right = new SegmentTreeNode(mid+1, root.max);
+            }
+            add(x, root.right);
+        }
+        return;
+    }
+
+    
+    public List<Integer> countSmaller(int[] nums) {
+        List<Integer> list = new ArrayList<>();
+        if (nums == null || nums.length == 0) {return list;}
+        
+        int min = Integer.MAX_VALUE, max = Integer.MIN_VALUE;
+        for (int i : nums) {
+            min = min > i ? i : min;
+            max = max < i ? i : max;
+        }
+        
+        SegmentTreeNode root = new SegmentTreeNode(min, max);
+        
+        for (int i = nums.length - 1; i >= 0; i--) {
+            list.add(0, find(nums[i], root)); // minus 1, in case there will be a equal one
+            add(nums[i], root);
+        }
+        
+        return list;
+    }
+    
+}
+
+32.Remove Duplicate Letters
+Hard
+
+626
+
+70
+
+Favorite
+
+Share
+Given a string which contains only lowercase letters, remove duplicate letters so that every letter appear once and only once. You must make sure your result is the smallest in lexicographical order among all possible results.
+
+Example 1:
+
+Input: "bcabc"
+Output: "abc"
+Example 2:
+
+Input: "cbacdcbc"
+Output: "acdb"
+
+class Solution {
+    public String removeDuplicateLetters(String s) {
+        if (s == null || s.length() == 0) {return "";}
+        
+        int[] cnt = new int[26];
+        for (char c : s.toCharArray()) {cnt[c-'a']++;}
+        
+        Stack<Character> stack = new Stack<>();
+        Set<Character> set = new HashSet<>();
+        for (char c : s.toCharArray()) {
+            if (set.contains(c)) {
+                cnt[c - 'a']--;
+                continue;
+            }
+            while (!stack.isEmpty() && c - 'a' < stack.peek() - 'a' && cnt[stack.peek() - 'a'] > 1) {
+                cnt[stack.peek() - 'a']--;
+                set.remove(stack.peek());    
+                stack.pop();
+            }
+
+            stack.push(c);
+            set.add(c);
+    
+        }
+        StringBuilder sb = new StringBuilder();
+        while(!stack.isEmpty()) {
+            sb.append(stack.pop());
+        }
+        return sb.reverse().toString();
+    }
+}
+
+33.Wiggle Sort II
+Medium
+
+542
+
+279
+
+Favorite
+
+Share
+Given an unsorted array nums, reorder it such that nums[0] < nums[1] > nums[2] < nums[3]....
+
+Example 1:
+
+Input: nums = [1, 5, 1, 1, 6, 4]
+Output: One possible answer is [1, 4, 1, 5, 1, 6].
+Example 2:
+
+Input: nums = [1, 3, 2, 2, 3, 1]
+Output: One possible answer is [2, 3, 1, 3, 1, 2].
+Note:
+You may assume all input has valid answer.
+
+Follow Up:
+Can you do it in O(n) time and/or in-place with O(1) extra space?
+
+class Solution {
+    public void wiggleSort(int[] nums) {
+        int median = findKthLargest(nums, (nums.length + 1) / 2);
+        int n = nums.length;
+
+        int left = 0, i = 0, right = n - 1;
+
+        while (i <= right) {
+
+            if (nums[newIndex(i,n)] > median) {
+                swap(nums, newIndex(left++,n), newIndex(i++,n));
+            }
+            else if (nums[newIndex(i,n)] < median) {
+                swap(nums, newIndex(right--,n), newIndex(i,n));
+            }
+            else {
+                i++;
+            }
+        }
+    }
+    
+    private int newIndex(int index, int n) {
+        return (1 + 2*index) % (n | 1);
+    }
+    
+    public void swap(int[] m, int i, int j) {
+        int tmp = m[i];
+        m[i] = m[j];
+        m[j] = tmp;
+    }
+    
+    public int findKthLargest(int[] nums, int k) {
+        if (nums == null || nums.length == 0) return Integer.MAX_VALUE;
+        return findKthLargest(nums, 0, nums.length - 1, nums.length - k);
+    }    
+
+    public int findKthLargest(int[] nums, int start, int end, int k) {// quick select: kth smallest
+        if (start > end) return Integer.MAX_VALUE;
+
+        int pivot = nums[end];// Take A[end] as the pivot, 
+        int left = start;
+        for (int i = start; i < end; i++) {
+            if (nums[i] <= pivot) // Put numbers < pivot to pivot's left
+                swap(nums, left++, i);			
+        }
+        swap(nums, left, end);// Finally, swap A[end] with A[left]
+
+        if (left == k)// Found kth smallest number
+            return nums[left];
+        else if (left < k)// Check right part
+            return findKthLargest(nums, left + 1, end, k);
+        else // Check left part
+            return findKthLargest(nums, start, left - 1, k);
+    } 
+}
+
+
+34.Count of Range Sum
+Hard
+
+335
+
+54
+
+Favorite
+
+Share
+Given an integer array nums, return the number of range sums that lie in [lower, upper] inclusive.
+Range sum S(i, j) is defined as the sum of the elements in nums between indices i and j (i ≤ j), inclusive.
+
+Note:
+A naive algorithm of O(n2) is trivial. You MUST do better than that.
+
+Example:
+
+Input: nums = [-2,5,-1], lower = -2, upper = 2,
+Output: 3 
+Explanation: The three ranges are : [0,0], [2,2], [0,2] and their respective sums are: -2, -1, 2.
+
+class Solution {
+    public int countRangeSum(int[] nums, int lower, int upper) {
+        if (nums == null || nums.length == 0) {return 0;}
+        
+        long[] s = new long[nums.length + 1];
+        for (int i = 0; i < nums.length; i++) {
+            s[i+1] = nums[i] + s[i];
+        }
+        
+        return helper(s, 0, s.length, lower, upper);
+    }
+    
+    public int helper(long[] s, int start, int end, int l, int u) {
+        if (end - start <= 1) return 0;
+        
+        int mid = start + (end - start)/2;
+        
+        int cnt = helper(s, start ,mid, l, u) + helper(s, mid, end, l, u);
+        
+        long[] cache = new long[end - start];
+        
+        int r = 0, j = mid, k = mid, t = mid;
+        for (int i = start; i < mid; i++) {
+            while (k < end && s[k] - s[i] < l) {k++;}
+            while (j < end && s[j] - s[i] <= u) {j++;}
+            while (t < end && s[t] - s[i] < 0) {cache[r++] = s[t++];}
+            cache[r++] = s[i];
+            cnt += j - k;
+        }
+        
+        System.arraycopy(cache, 0, s, start, t - start);
+        return cnt;
+    }
+}
+
+35.Longest Increasing Path in a Matrix
+Hard
+
+834
+
+17
+
+Favorite
+
+Share
+Given an integer matrix, find the length of the longest increasing path.
+
+From each cell, you can either move to four directions: left, right, up or down. You may NOT move diagonally or move outside of the boundary (i.e. wrap-around is not allowed).
+
+Example 1:
+
+Input: nums = 
+[
+  [9,9,4],
+  [6,6,8],
+  [2,1,1]
+] 
+Output: 4 
+Explanation: The longest increasing path is [1, 2, 6, 9].
+Example 2:
+
+Input: nums = 
+[
+  [3,4,5],
+  [3,2,6],
+  [2,2,1]
+] 
+Output: 4 
+Explanation: The longest increasing path is [3, 4, 5, 6]. Moving diagonally is not allowed.
+
+public static final int[][] dirs = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
+
+public int longestIncreasingPath(int[][] matrix) {
+    if(matrix.length == 0) return 0;
+    int m = matrix.length, n = matrix[0].length;
+    int[][] cache = new int[m][n];
+    int max = 1;
+    for(int i = 0; i < m; i++) {
+        for(int j = 0; j < n; j++) {
+            int len = dfs(matrix, i, j, m, n, cache);
+            max = Math.max(max, len);
+        }
+    }   
+    return max;
+}
+
+public int dfs(int[][] matrix, int i, int j, int m, int n, int[][] cache) {
+    if(cache[i][j] != 0) return cache[i][j];
+    int max = 1;
+    for(int[] dir: dirs) {
+        int x = i + dir[0], y = j + dir[1];
+        if(x < 0 || x >= m || y < 0 || y >= n || matrix[x][y] <= matrix[i][j]) continue;
+        int len = 1 + dfs(matrix, x, y, m, n, cache);
+        max = Math.max(max, len);
+    }
+    cache[i][j] = max;
+    return max;
+}
+
+36.Patching Array
+Hard
+
+276
+
+51
+
+Favorite
+
+Share
+Given a sorted positive integer array nums and an integer n, add/patch elements to the array such that any number in range [1, n] inclusive can be formed by the sum of some elements in the array. Return the minimum number of patches required.
+
+Example 1:
+
+Input: nums = [1,3], n = 6
+Output: 1 
+Explanation:
+Combinations of nums are [1], [3], [1,3], which form possible sums of: 1, 3, 4.
+Now if we add/patch 2 to nums, the combinations are: [1], [2], [3], [1,3], [2,3], [1,2,3].
+Possible sums are 1, 2, 3, 4, 5, 6, which now covers the range [1, 6].
+So we only need 1 patch.
+Example 2:
+
+Input: nums = [1,5,10], n = 20
+Output: 2
+Explanation: The two patches can be [2, 4].
+Example 3:
+
+Input: nums = [1,2,2], n = 5
+Output: 0
+
+class Solution {
+    public int minPatches(int[] nums, int n) {
+        long max = 0;
+        int cnt = 0;
+        for (int i = 0; max < n;) {
+            if (i >= nums.length || max < nums[i] - 1) {
+                max += max + 1;
+                cnt ++;
+            } else {
+                max += nums[i];
+                i ++;
+            }
+        }
+        return cnt;
+    }
+}
+
+37.Verify Preorder Serialization of a Binary Tree
+Medium
+
+454
+
+27
+
+Favorite
+
+Share
+One way to serialize a binary tree is to use pre-order traversal. When we encounter a non-null node, we record the node's value. If it is a null node, we record using a sentinel value such as #.
+
+     _9_
+    /   \
+   3     2
+  / \   / \
+ 4   1  #  6
+/ \ / \   / \
+# # # #   # #
+For example, the above binary tree can be serialized to the string "9,3,4,#,#,1,#,#,2,#,6,#,#", where # represents a null node.
+
+Given a string of comma separated values, verify whether it is a correct preorder traversal serialization of a binary tree. Find an algorithm without reconstructing the tree.
+
+Each comma separated value in the string must be either an integer or a character '#' representing null pointer.
+
+You may assume that the input format is always valid, for example it could never contain two consecutive commas such as "1,,3".
+
+Example 1:
+
+Input: "9,3,4,#,#,1,#,#,2,#,6,#,#"
+Output: true
+Example 2:
+
+Input: "1,#"
+Output: false
+Example 3:
+
+Input: "9,#,#,1"
+Output: false
+
+class Solution {
+    public boolean isValidSerialization(String s) {
+        if (s == null) {return false;}
+        
+        String[] nodes = s.split(",");
+        Stack<String> stack = new Stack<>();
+        
+        for (int i = 0; i < nodes.length; i++) {
+            String cur = nodes[i];
+            
+            while (cur.equals("#") && !stack.isEmpty() && stack.peek().equals("#")) {
+                stack.pop();
+                if (stack.isEmpty()) {return false;}
+                stack.pop();
+            }
+            
+            stack.push(cur);
+        }
+        return stack.size() == 1 && stack.peek().equals("#");
+    }
+}
+
+38.Max Sum of Rectangle No Larger Than K
+Hard
+
+356
+
+30
+
+Favorite
+
+Share
+Given a non-empty 2D matrix matrix and an integer k, find the max sum of a rectangle in the matrix such that its sum is no larger than k.
+
+Example:
+
+Input: matrix = [[1,0,1],[0,-2,3]], k = 2
+Output: 2 
+Explanation: Because the sum of rectangle [[0, 1], [-2, 3]] is 2,
+             and 2 is the max number no larger than k (k = 2).
+Note:
+
+The rectangle inside the matrix must have an area > 0.
+What if the number of rows is much larger than the number of columns?
+
+class Solution {
+    public int maxSumSubmatrix(int[][] matrix, int k) {
+        if (matrix == null || matrix.length == 0 || matrix[0].length == 0) {
+            return 0;  
+        }
+            
+        int row = matrix.length;
+        int col = matrix[0].length;
+        
+        int[][] areas = new int[row][col];
+        
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < col; j++) {
+                int area = matrix[i][j];
+                if (i-1 >= 0) {
+                    area += areas[i-1][j];
+                }
+                if (j-1 >= 0) {
+                    area += areas[i][j-1];
+                }
+                if (i-1 >= 0 && j-1 >= 0) {
+                    area -= areas[i-1][j-1];
+                }
+                areas[i][j] = area;
+            }
+        }
+        
+        int max = Integer.MIN_VALUE;
+        for (int r1 = 0; r1 < row; r1++) {
+            for (int r2 = r1; r2 < row; r2++) {
+                TreeSet<Integer> tree = new TreeSet<>();
+                tree.add(0);  
+                for (int c = 0; c < col; c++) {
+                    int area = areas[r2][c];
+                    if (r1-1 >= 0) {
+                        area -= areas[r1-1][c];
+                    }
+                    Integer ceiling = tree.ceiling(area - k);
+                    if (ceiling != null) {
+                        max = Math.max(max, area - (int)ceiling);
+                    }
+                    tree.add(area);
+                }
+            }
+        }
+        return max;
+    }
+}
+
+39.Lexicographical Numbers
+Medium
+
+333
+
+53
+
+Favorite
+
+Share
+Given an integer n, return 1 - n in lexicographical order.
+
+For example, given 13, return: [1,10,11,12,13,2,3,4,5,6,7,8,9].
+
+Please optimize your algorithm to use less time and space. The input size may be as large as 5,000,000.
+
+class Solution {
+    public List<Integer> lexicalOrder(int n) {
+        List<Integer> list = new ArrayList<>();
+        if (n < 1) {return list;}
+        
+        for (int i = 1; i <= 9; i++) {
+            dfs(i, n, list); 
+        }
+        
+        return list;
+    }
+    
+    void dfs(int cur, int n, List<Integer> list) {
+        if (cur > n) {return;}
+        else {
+            list.add(cur);
+            for (int i=0; i <= 9; i++) {
+                if (cur*10+i > n) {
+                    return;
+                } else {
+                    dfs(cur*10+i, n, list);
+                }
+            }
+        }
+        
+    }
+}
+
+40.Decode String
+Medium
+
+1269
+
+69
+
+Favorite
+
+Share
+Given an encoded string, return it's decoded string.
+
+The encoding rule is: k[encoded_string], where the encoded_string inside the square brackets is being repeated exactly k times. Note that k is guaranteed to be a positive integer.
+
+You may assume that the input string is always valid; No extra white spaces, square brackets are well-formed, etc.
+
+Furthermore, you may assume that the original data does not contain any digits and that digits are only for those repeat numbers, k. For example, there won't be input like 3a or 2[4].
+
+Examples:
+
+s = "3[a]2[bc]", return "aaabcbc".
+s = "3[a2[c]]", return "accaccacc".
+s = "2[abc]3[cd]ef", return "abcabccdcdcdef".
+
+
+//use 2 stack to store info, one for count, one for string
+class Solution {
+    public String decodeString(String s) {
+        if (s == null || s.length() == 0) {return s;}
+        
+        int idx = 0;
+        Stack<Integer> cntStack = new Stack<>();
+        Stack<String> resStack = new Stack<>();
+        String res = "";
+        
+        while (idx < s.length()) {
+            char c = s.charAt(idx);
+            if (Character.isDigit(c)) {
+                int count = 0;
+                while (Character.isDigit(s.charAt(idx))) {
+                    count = 10 * count + (s.charAt(idx) - '0');
+                    idx++;
+                }
+                cntStack.push(count);    
+            } else if (c == '[') {
+                resStack.push(res);
+                idx++;
+                res = "";
+            } else if (c == ']') {
+                int times = cntStack.pop();
+                String str = resStack.pop();
+                StringBuilder tmp = new StringBuilder(str);
+                for (int i = 1; i <= times; i++) {
+                    tmp.append(res);
+                }
+                res = tmp.toString();
+                idx++;
+            } else {
+                res += c;
+                idx++;
+            }
+        }
+        return res;
+    }
+}
+
+

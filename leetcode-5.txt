@@ -1,0 +1,576 @@
+81.Short Encoding of Words
+Medium
+
+135
+
+38
+
+Favorite
+
+Share
+Given a list of words, we may encode it by writing a reference string S and a list of indexes A.
+
+For example, if the list of words is ["time", "me", "bell"], we can write it as S = "time#bell#" and indexes = [0, 2, 5].
+
+Then for each index, we will recover the word by reading from the reference string from that index until we reach a "#" character.
+
+What is the length of the shortest reference string S possible that encodes the given words?
+
+Example:
+
+Input: words = ["time", "me", "bell"]
+Output: 10
+Explanation: S = "time#bell#" and indexes = [0, 2, 5].
+ 
+
+Note:
+
+1 <= words.length <= 2000.
+1 <= words[i].length <= 7.
+Each word has only lowercase letters.
+
+class Solution {
+
+    
+    class TrieNode {
+        Map<Character, TrieNode> node;
+        TrieNode () {
+            node = new HashMap<Character, TrieNode>();
+        }
+    }
+    
+    public boolean add(String s, TrieNode root) {
+        TrieNode cur = root;
+        boolean newNeed = false;
+        for (int i = s.length()-1; i >= 0; i--) {
+            char c = s.charAt(i);
+            if (!cur.node.containsKey(c)) {
+                cur.node.put(c, new TrieNode());
+                newNeed = true;
+            } 
+            cur = cur.node.get(c);
+        }
+        return newNeed;
+    }
+    
+    public int minimumLengthEncoding(String[] words) {
+        if(words == null || words.length < 1)return 0; 
+        Arrays.sort(words, (a, b)->b.length() - a.length()); 
+        int len = 0 ; 
+        TrieNode root = new TrieNode();
+        for(String word : words){
+            if(add(word, root)){
+                len+=word.length()+1; 
+            }
+        }
+        return len; 
+    }
+}
+
+82.Unique Letter String
+Hard
+
+181
+
+24
+
+Favorite
+
+Share
+A character is unique in string S if it occurs exactly once in it.
+
+For example, in string S = "LETTER", the only unique characters are "L" and "R".
+
+Let's define UNIQ(S) as the number of unique characters in string S.
+
+For example, UNIQ("LETTER") =  2.
+
+Given a string S with only uppercases, calculate the sum of UNIQ(substring) over all non-empty substrings of S.
+
+If there are two or more equal substrings at different positions in S, we consider them different.
+
+Since the answer can be very large, return the answer modulo 10 ^ 9 + 7.
+
+ 
+
+Example 1:
+
+Input: "ABC"
+Output: 10
+Explanation: All possible substrings are: "A","B","C","AB","BC" and "ABC".
+Evey substring is composed with only unique letters.
+Sum of lengths of all substring is 1 + 1 + 1 + 2 + 2 + 3 = 10
+Example 2:
+
+Input: "ABA"
+Output: 8
+Explanation: The same as example 1, except uni("ABA") = 1.
+ 
+
+Note: 0 <= S.length <= 10000.
+
+class Solution {
+    public int uniqueLetterString(String s) {
+        if (s == null || s.length() == 0) {return 0;}
+        
+        int n = s.length();
+        int res = 0;
+        int mod = (int)Math.pow(10, 9) + 7;
+        
+        int[][] dp = new int[26][2];
+        for (int i = 0; i < 26; i++) {
+            for (int j = 0; j < 2; j++) {
+                dp[i][j] = -1;
+            }
+        }
+        
+        for (int i = 0; i < n; i++) {
+            int c = s.charAt(i) - 'A';
+            res = (res + (i - dp[c][1]) * (dp[c][1] - dp[c][0]) % mod) % mod;
+            dp[c] = new int[]{dp[c][1], i};
+        }
+        
+        for (int i = 0; i < 26; i++) {
+            res = (res + (n - dp[i][1]) * (dp[i][1] - dp[i][0]) % mod) % mod;
+        }
+        
+        return res;
+    }
+}
+
+83.Sum of Distances in Tree
+Hard
+
+377
+
+20
+
+Favorite
+
+Share
+An undirected, connected tree with N nodes labelled 0...N-1 and N-1 edges are given.
+
+The ith edge connects nodes edges[i][0] and edges[i][1] together.
+
+Return a list ans, where ans[i] is the sum of the distances between node i and all other nodes.
+
+Example 1:
+
+Input: N = 6, edges = [[0,1],[0,2],[2,3],[2,4],[2,5]]
+Output: [8,12,6,10,10,10]
+Explanation: 
+Here is a diagram of the given tree:
+  0
+ / \
+1   2
+   /|\
+  3 4 5
+We can see that dist(0,1) + dist(0,2) + dist(0,3) + dist(0,4) + dist(0,5)
+equals 1 + 1 + 2 + 2 + 2 = 8.  Hence, answer[0] = 8, and so on.
+Note: 1 <= N <= 10000
+
+class Solution {
+    int[] count;
+    int[] res;
+    ArrayList<HashSet<Integer>> tree;
+    int n;
+    public int[] sumOfDistancesInTree(int N, int[][] edges) {
+        tree = new ArrayList<HashSet<Integer>>();
+        res = new int[N];
+        count = new int[N];
+        n = N;
+        
+        for (int i = 0; i < N ; ++i ) tree.add(new HashSet<Integer>());
+        for (int[] e : edges) {tree.get(e[0]).add(e[1]); tree.get(e[1]).add(e[0]);}
+        dfs(0, new HashSet<Integer>());
+        dfs2(0, new HashSet<Integer>());
+        return res;
+    }
+    
+    void dfs (int root, HashSet<Integer> seen) {
+        seen.add(root);
+        for (int i : tree.get(root)) {
+            if (!seen.contains(i)) {
+                dfs(i, seen);
+                count[root] += count[i];
+                res[root] += count[i] + res[i];
+            }
+        }
+        count[root]++;
+    }
+    
+    void dfs2 (int root, HashSet<Integer> seen) {
+        seen.add(root);
+        for (int i : tree.get(root)) {
+            if (!seen.contains(i)) {
+                res[i] = res[root] - count[i] + n - count[i];
+                dfs2(i, seen);
+            }
+        }
+    }
+}
+
+84.New 21 Game
+Medium
+
+239
+
+136
+
+Favorite
+
+Share
+Alice plays the following game, loosely based on the card game "21".
+
+Alice starts with 0 points, and draws numbers while she has less than K points.  During each draw, she gains an integer number of points randomly from the range [1, W], where W is an integer.  Each draw is independent and the outcomes have equal probabilities.
+
+Alice stops drawing numbers when she gets K or more points.  What is the probability that she has N or less points?
+
+Example 1:
+
+Input: N = 10, K = 1, W = 10
+Output: 1.00000
+Explanation:  Alice gets a single card, then stops.
+Example 2:
+
+Input: N = 6, K = 1, W = 10
+Output: 0.60000
+Explanation:  Alice gets a single card, then stops.
+In 6 out of W = 10 possibilities, she is at or below N = 6 points.
+Example 3:
+
+Input: N = 21, K = 17, W = 10
+Output: 0.73278
+Note:
+
+0 <= K <= N <= 10000
+1 <= W <= 10000
+Answers will be accepted as correct if they are within 10^-5 of the correct answer.
+The judging time limit has been reduced for this question.
+
+class Solution {
+    public double new21Game(int N, int K, int W) {
+        if (K == 0 || N >= K + W) return 1;
+        double dp[] = new double[N + 1],  Wsum = 1, res = 0;
+        dp[0] = 1;
+        for (int i = 1; i <= N; ++i) {
+            dp[i] = Wsum / W;
+            if (i < K) Wsum += dp[i]; else res += dp[i];
+            if (i - W >= 0) Wsum -= dp[i - W];
+        }
+        return res;
+    }
+}
+
+85. K-Similar Strings
+Hard
+
+135
+
+16
+
+Favorite
+
+Share
+Strings A and B are K-similar (for some non-negative integer K) if we can swap the positions of two letters in A exactly K times so that the resulting string equals B.
+
+Given two anagrams A and B, return the smallest K for which A and B are K-similar.
+
+Example 1:
+
+Input: A = "ab", B = "ba"
+Output: 1
+Example 2:
+
+Input: A = "abc", B = "bca"
+Output: 2
+Example 3:
+
+Input: A = "abac", B = "baca"
+Output: 2
+Example 4:
+
+Input: A = "aabc", B = "abca"
+Output: 2
+Note:
+
+1 <= A.length == B.length <= 20
+A and B contain only lowercase letters from the set {'a', 'b', 'c', 'd', 'e', 'f'}
+
+class Solution {
+    public int kSimilarity(String A, String B) {
+        if (A.equals(B)) {return 0;}
+        
+        Set<String> visited = new HashSet<>();
+        Queue<String> q = new LinkedList<>();
+        q.add(A);
+        visited.add(A);
+        int step = 0;
+        
+        while (!q.isEmpty()) {
+            int size = q.size();
+            step++;
+            while (size -- > 0) {
+                String s = q.poll();
+                int i = 0;
+                while (s.charAt(i) == B.charAt(i)) {i++;}
+                for (int j = i + 1; j < s.length(); j++) {
+                    if ((s.charAt(j) == B.charAt(j)) || (s.charAt(j) != B.charAt(i))) {continue;}
+                    String tmp = swap(s, i, j);
+                    if (tmp.equals(B)) {return step;}
+                    if (visited.contains(tmp)) {
+                        continue;
+                    } else {visited.add(tmp);q.add(tmp);}
+                }
+            }
+        }
+        return step;
+    }
+    
+    public String swap(String s, int i, int j){
+        char[] ca=s.toCharArray();
+        char temp=ca[i];
+        ca[i]=ca[j];
+        ca[j]=temp;
+        return new String(ca);
+    }
+}
+
+86.Advantage Shuffle
+Medium
+
+222
+
+16
+
+Favorite
+
+Share
+Given two arrays A and B of equal size, the advantage of A with respect to B is the number of indices i for which A[i] > B[i].
+
+Return any permutation of A that maximizes its advantage with respect to B.
+
+ 
+
+Example 1:
+
+Input: A = [2,7,11,15], B = [1,10,4,11]
+Output: [2,11,7,15]
+Example 2:
+
+Input: A = [12,24,8,32], B = [13,25,32,11]
+Output: [24,32,8,12]
+ 
+
+Note:
+
+1 <= A.length = B.length <= 10000
+0 <= A[i] <= 10^9
+0 <= B[i] <= 10^9
+
+class Solution {
+    public int[] advantageCount(int[] A, int[] B) {
+        TreeMap<Integer, Integer> m  = new TreeMap<>();
+        for (int i : A) {m.put(i, m.getOrDefault(i, 0) + 1);}
+        
+        int[] res = new int[A.length];
+        for (int i = 0; i < A.length; i++) {
+            Integer x = m.higherKey(B[i]);
+            if (x == null) {
+                x = m.firstKey();
+            }
+            m.put(x, m.get(x)-1);
+            if (m.get(x) == 0) {m.remove(x);}
+            res[i] = x;
+        }
+        
+        return res;
+    }
+}
+
+87.Smallest Range II
+Medium
+
+142
+
+102
+
+Favorite
+
+Share
+Given an array A of integers, for each integer A[i] we need to choose either x = -K or x = K, and add x to A[i] (only once).
+
+After this process, we have some array B.
+
+Return the smallest possible difference between the maximum value of B and the minimum value of B.
+
+ 
+
+Example 1:
+
+Input: A = [1], K = 0
+Output: 0
+Explanation: B = [1]
+Example 2:
+
+Input: A = [0,10], K = 2
+Output: 6
+Explanation: B = [2,8]
+Example 3:
+
+Input: A = [1,3,6], K = 3
+Output: 3
+Explanation: B = [4,6,3]
+ 
+
+Note:
+
+1 <= A.length <= 10000
+0 <= A[i] <= 10000
+0 <= K <= 10000
+
+public int smallestRangeII(int[] A, int K) {
+        Arrays.sort(A);
+        int n = A.length, mx = A[n - 1], mn = A[0], res = mx - mn;
+        for (int i = 0; i < n - 1; ++i) {
+            mx = Math.max(mx, A[i] + 2 * K);
+            mn = Math.min(A[i + 1], A[0] + 2 * K);
+            res = Math.min(res, mx - mn);
+        }
+        return res;
+    }
+
+Regions Cut By Slashes
+Medium
+
+187
+
+47
+
+Favorite
+
+Share
+In a N x N grid composed of 1 x 1 squares, each 1 x 1 square consists of a /, \, or blank space.  These characters divide the square into contiguous regions.
+
+(Note that backslash characters are escaped, so a \ is represented as "\\".)
+
+Return the number of regions.
+
+ 
+
+Example 1:
+
+Input:
+[
+  " /",
+  "/ "
+]
+Output: 2
+Explanation: The 2x2 grid is as follows:
+
+Example 2:
+
+Input:
+[
+  " /",
+  "  "
+]
+Output: 1
+Explanation: The 2x2 grid is as follows:
+
+Example 3:
+
+Input:
+[
+  "\\/",
+  "/\\"
+]
+Output: 4
+Explanation: (Recall that because \ characters are escaped, "\\/" refers to \/, and "/\\" refers to /\.)
+The 2x2 grid is as follows:
+
+Example 4:
+
+Input:
+[
+  "/\\",
+  "\\/"
+]
+Output: 5
+Explanation: (Recall that because \ characters are escaped, "/\\" refers to /\, and "\\/" refers to \/.)
+The 2x2 grid is as follows:
+
+Example 5:
+
+Input:
+[
+  "//",
+  "/ "
+]
+Output: 3
+Explanation: The 2x2 grid is as follows:
+class Solution {
+    class UF {
+        Map<Integer, Integer> father;
+        int cnt;
+        UF (Map<Integer, Integer> father, int cnt) {
+            for (int i = 1; i <= cnt; i++) {
+                father.put(i , i);
+            }
+            this.father = father;
+            this.cnt = cnt;
+        }
+        
+        int find(int x) {
+            if (father.get(x) == x) {return x;}
+            father.put(x, find(father.get(x)));
+            return father.get(x);
+        }
+        
+        void union(int x, int y) {
+            int xroot = father.get(x);
+            int yroot = father.get(y);
+            if (xroot != yroot) {
+                father.put(y, xroot);
+            }
+            cnt--;
+        }
+    }
+    
+    public int regionsBySlashes(String[] grid) {
+        if (grid == null || grid.length == 0) {return 0;}
+        
+        int n = grid.length;
+        UF uf = new UF(new HashMap<Integer, Integer>(), n*n*4);
+     
+        for (int i = 0; i < n; i++) {
+            String s = grid[i];
+            for (int j = 0; j < s.length(); j++) {
+                if (j > 0) {uf.union(g(i, j-1,1), g(i, j, 3));}
+                if (i > 0) {uf.union(g(i-1, j,2), g(i, j, 0));}
+                
+                if (s.charAt(j) == '/') {
+                    uf.union(g(i, j, 0), g(i, j, 3));
+                    uf.union(g(i, j, 1), g(i, j, 2));
+                } 
+                if (s.charAt(j) == '\\') {
+                    uf.union(g(i, j, 0), g(i, j, 1));
+                    uf.union(g(i, j, 2), g(i, j, 3));
+                } 
+                if (s.charAt(j) == ' ') {
+                    uf.union(g(i, j, 0), g(i, j, 1));
+                    uf.union(g(i, j, 0), g(i, j, 2));
+                    uf.union(g(i, j, 0), g(i, j, 3));
+                }
+            }
+            
+        }
+        return uf.cnt;
+    }
+    
+    public int g(int i, int j, int k) {
+        return (i * n + j) * 4 + k;
+    }
+}
+
+

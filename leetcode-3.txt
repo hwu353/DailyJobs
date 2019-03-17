@@ -1,0 +1,1195 @@
+41.Remove K Digits
+Medium
+
+782
+
+48
+
+Favorite
+
+Share
+Given a non-negative integer num represented as a string, remove k digits from the number so that the new number is the smallest possible.
+
+Note:
+The length of num is less than 10002 and will be ≥ k.
+The given num does not contain any leading zero.
+Example 1:
+
+Input: num = "1432219", k = 3
+Output: "1219"
+Explanation: Remove the three digits 4, 3, and 2 to form the new number 1219 which is the smallest.
+Example 2:
+
+Input: num = "10200", k = 1
+Output: "200"
+Explanation: Remove the leading 1 and the number is 200. Note that the output must not contain leading zeroes.
+Example 3:
+
+Input: num = "10", k = 2
+Output: "0"
+Explanation: Remove all the digits from the number and it is left with nothing which is 0.
+
+class Solution {
+    public String removeKdigits(String num, int k) {
+        if (num == null || num.length() == 0) {return "";}
+        
+        if (k >= num.length()) {return "0";}
+        
+        Stack<Character> stack = new Stack<>();
+        
+        for (int i = 0; i < num.length(); i++) {
+            while (k > 0 && !stack.isEmpty() && num.charAt(i) < stack.peek()) {
+                stack.pop();
+                k--;
+            }
+            stack.push(num.charAt(i));
+        }
+        
+        while(k > 0) {
+            stack.pop();
+            k--;
+        }
+        
+        StringBuilder sb = new StringBuilder();
+        while(!stack.isEmpty())
+            sb.append(stack.pop());
+        sb.reverse();
+        
+        while(sb.length()>1 && sb.charAt(0)=='0')
+            sb.deleteCharAt(0);
+        return sb.toString();
+    }
+}
+
+
+42. Queue Reconstruction by Height
+Medium
+
+1399
+
+164
+
+Favorite
+
+Share
+Suppose you have a random list of people standing in a queue. Each person is described by a pair of integers (h, k), where h is the height of the person and k is the number of people in front of this person who have a height greater than or equal to h. Write an algorithm to reconstruct the queue.
+
+Note:
+The number of people is less than 1,100.
+
+
+Example
+
+Input:
+[[7,0], [4,4], [7,1], [5,0], [6,1], [5,2]]
+
+Output:
+[[5,0], [7,0], [5,2], [6,1], [4,4], [7,1]]
+
+class Solution {
+    public int[][] reconstructQueue(int[][] people) {
+        if (people == null || people.length == 0 || people[0].length == 0)
+            return new int[0][0];
+            
+        Arrays.sort(people, new Comparator<int[]>() {
+            public int compare(int[] a, int[] b) {
+                if (b[0] == a[0]) return a[1] - b[1];
+                return b[0] - a[0];
+            }
+        });
+        
+        int n = people.length;
+        ArrayList<int[]> tmp = new ArrayList<>();
+        for (int i = 0; i < n; i++)
+            tmp.add(people[i][1], new int[]{people[i][0], people[i][1]});
+
+        int[][] res = new int[people.length][2];
+        int i = 0;
+        for (int[] k : tmp) {
+            res[i][0] = k[0];
+            res[i++][1] = k[1];
+        }
+        
+        return res;
+    }
+}
+
+43.Split Array Largest Sum
+Hard
+
+594
+
+37
+
+Favorite
+
+Share
+Given an array which consists of non-negative integers and an integer m, you can split the array into m non-empty continuous subarrays. Write an algorithm to minimize the largest sum among these m subarrays.
+
+Note:
+If n is the length of array, assume the following constraints are satisfied:
+
+1 ≤ n ≤ 1000
+1 ≤ m ≤ min(50, n)
+Examples:
+
+Input:
+nums = [7,2,5,10,8]
+m = 2
+
+Output:
+18
+
+Explanation:
+There are four ways to split nums into two subarrays.
+The best way is to split it into [7,2,5] and [10,8],
+where the largest sum among the two subarrays is only 18.
+
+class Solution {
+    public int splitArray(int[] nums, int m) {
+        int max = 0; long sum = 0;
+        for (int num : nums) {
+            max = Math.max(num, max);
+            sum += num;
+        }
+        if (m == 1) return (int)sum;
+        //binary search
+        long l = max; long r = sum;
+        while (l < r) {
+            long mid = (l + r)/ 2;
+            if (valid(mid, nums, m)) {
+                r = mid;
+            } else {
+                l = mid + 1;
+            }
+        }
+        return (int)r;
+    }
+    
+    boolean valid(long target, int[] a, int m) {
+        int count = 1;
+        long total = 0;
+        for(int num : a) {
+            total += num;
+            if (total > target) {
+                total = num;
+                count++;
+                if (count > m) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+}
+
+44.Add Two Numbers II
+Medium
+
+646
+
+87
+
+Favorite
+
+Share
+You are given two non-empty linked lists representing two non-negative integers. The most significant digit comes first and each of their nodes contain a single digit. Add the two numbers and return it as a linked list.
+
+You may assume the two numbers do not contain any leading zero, except the number 0 itself.
+
+Follow up:
+What if you cannot modify the input lists? In other words, reversing the lists is not allowed.
+
+Example:
+
+Input: (7 -> 2 -> 4 -> 3) + (5 -> 6 -> 4)
+Output: 7 -> 8 -> 0 -> 7
+
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+    public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        ListNode r1 = reverse(l1);
+        ListNode r2 = reverse(l2);
+        
+        int cnt = 0;
+        
+        ListNode cur = new ListNode(-1);
+        ListNode res = cur;
+        while (r1 != null || r2 != null) {
+            if (r1 == null) {
+                int val = (r2.val + cnt)%10;
+                cnt = (r2.val + cnt)/10;
+                res.next = new ListNode(val);
+                r2 = r2.next;
+            } else if (r2 == null) {
+                int val = (r1.val + cnt)%10;
+                cnt = (r1.val + cnt)/10;
+                res.next = new ListNode(val);
+                r1 = r1.next; 
+            } else {
+                int val = (r1.val + r2.val + cnt)%10;
+                cnt = (r1.val + r2.val + cnt)/10;
+                res.next = new ListNode(val);
+                r1 = r1.next;
+                r2 = r2.next;
+            }
+            res = res.next;
+        }
+        if (cnt > 0) {res.next = new ListNode(cnt);}
+        
+        return reverse(cur.next);
+    }
+    
+    public ListNode reverse(ListNode ln) {
+        if (ln == null) {return ln;}
+        
+        ListNode pre = null;
+        ListNode cur = ln;
+        
+        while (cur != null) {
+            ListNode tmp = cur.next;
+            cur.next = pre; 
+            pre = cur;
+            cur = tmp;
+        }
+        
+        return pre;
+    }
+}
+
+45.Arithmetic Slices II - Subsequence
+Hard
+
+233
+
+32
+
+Favorite
+
+Share
+A sequence of numbers is called arithmetic if it consists of at least three elements and if the difference between any two consecutive elements is the same.
+
+For example, these are arithmetic sequences:
+
+1, 3, 5, 7, 9
+7, 7, 7, 7
+3, -1, -5, -9
+The following sequence is not arithmetic.
+
+1, 1, 2, 5, 7
+
+A zero-indexed array A consisting of N numbers is given. A subsequence slice of that array is any sequence of integers (P0, P1, ..., Pk) such that 0 ≤ P0 < P1 < ... < Pk < N.
+
+A subsequence slice (P0, P1, ..., Pk) of array A is called arithmetic if the sequence A[P0], A[P1], ..., A[Pk-1], A[Pk] is arithmetic. In particular, this means that k ≥ 2.
+
+The function should return the number of arithmetic subsequence slices in the array A.
+
+The input contains N integers. Every integer is in the range of -231 and 231-1 and 0 ≤ N ≤ 1000. The output is guaranteed to be less than 231-1.
+
+
+Example:
+
+Input: [2, 4, 6, 8, 10]
+
+Output: 7
+
+Explanation:
+All arithmetic subsequence slices are:
+[2,4,6]
+[4,6,8]
+[6,8,10]
+[2,4,6,8]
+[4,6,8,10]
+[2,4,6,8,10]
+[2,6,10]
+
+class Solution {
+    public int numberOfArithmeticSlices(int[] a) {
+        if (a == null || a.length == 0) {return 0;}
+        
+        Map<Integer, Integer>[] map = new Map[a.length];
+        int res = 0;
+        
+        for (int i = 0; i < a.length; i++) {
+            map[i] = new HashMap<Integer, Integer>();
+            
+            for (int j = 0; j < i; j++) {
+                long diff = (long)a[i] - a[j];
+                if (diff <= Integer.MIN_VALUE || diff > Integer.MAX_VALUE) continue;  
+                int d = (int)diff;
+                
+                int c1 = map[i].getOrDefault(d, 0);
+                int c2 = map[j].getOrDefault(d, 0);
+                res += c2;
+                map[i].put(d, c1+c2+1);
+            }
+        }
+        return res;
+    }
+}
+
+46.Minimum Moves to Equal Array Elements II
+Medium
+
+324
+
+29
+
+Favorite
+
+Share
+Given a non-empty integer array, find the minimum number of moves required to make all array elements equal, where a move is incrementing a selected element by 1 or decrementing a selected element by 1.
+
+You may assume the array's length is at most 10,000.
+
+Example:
+
+Input:
+[1,2,3]
+
+Output:
+2
+
+Explanation:
+Only two moves are needed (remember each move increments or decrements one element):
+
+[1,2,3]  =>  [2,2,3]  =>  [2,2,2]
+
+class Solution {
+    public int minMoves2(int[] nums) {
+        Arrays.sort(nums);
+        int i = 0, j = nums.length-1;
+        int count = 0;
+        while(i < j){
+            count += nums[j]-nums[i];
+            i++;
+            j--;
+        }
+        return count;
+    }
+}
+
+47.Optimal Account Balancing
+Hard
+
+185
+
+40
+
+Favorite
+
+Share
+A group of friends went on holiday and sometimes lent each other money. For example, Alice paid for Bill's lunch for $10. Then later Chris gave Alice $5 for a taxi ride. We can model each transaction as a tuple (x, y, z) which means person x gave person y $z. Assuming Alice, Bill, and Chris are person 0, 1, and 2 respectively (0, 1, 2 are the person's ID), the transactions can be represented as [[0, 1, 10], [2, 0, 5]].
+
+Given a list of transactions between a group of people, return the minimum number of transactions required to settle the debt.
+
+Note:
+
+A transaction will be given as a tuple (x, y, z). Note that x ≠ y and z > 0.
+Person's IDs may not be linear, e.g. we could have the persons 0, 1, 2 or we could also have the persons 0, 2, 6.
+Example 1:
+
+Input:
+[[0,1,10], [2,0,5]]
+
+Output:
+2
+
+Explanation:
+Person #0 gave person #1 $10.
+Person #2 gave person #0 $5.
+
+Two transactions are needed. One way to settle the debt is person #1 pays person #0 and #2 $5 each.
+Example 2:
+
+Input:
+[[0,1,10], [1,0,1], [1,2,5], [2,0,5]]
+
+Output:
+1
+
+Explanation:
+Person #0 gave person #1 $10.
+Person #1 gave person #0 $1.
+Person #1 gave person #2 $5.
+Person #2 gave person #0 $5.
+
+Therefore, person #1 only need to give person #0 $4, and all debt is settled.
+
+ public int minTransfers(int[][] transactions) {
+        int[] debt = buildDebtArray(transactions); // Debt amount to balance for each person.
+        
+        return getMinTransfersAfter(0, debt);
+    }
+    
+    private int getMinTransfersAfter(int curId, int[] debt) {
+        while (curId < debt.length && debt[curId] == 0)
+            curId++;
+        // Base case.
+        if (curId == debt.length)
+            return 0;
+        // Recursive case.
+        int minTransactions = Integer.MAX_VALUE;
+        for (int i = curId + 1; i < debt.length; i++) {
+            if (debt[i] * debt[curId] < 0) {
+                debt[i] += debt[curId];
+                minTransactions = Math.min(minTransactions, getMinTransfersAfter(curId + 1, debt) + 1);
+                debt[i] -= debt[curId];
+            }
+        }
+        
+        return minTransactions;
+    }
+    
+    private int[] buildDebtArray(int[][] transactions) {
+        Map<Integer, Integer> debtMap = new HashMap<>(); // Map person ID to debt amount.
+        
+        for (int[] transaction : transactions) {
+            int giver = transaction[0];
+            int taker = transaction[1];
+            int amount = transaction[2];
+            debtMap.put(giver, debtMap.getOrDefault(giver, 0) + amount);
+            debtMap.put(taker, debtMap.getOrDefault(taker, 0) - amount);
+        }
+        
+        int[] debt = new int[debtMap.size()];
+        int i = 0;
+        for (int amount : debtMap.values()) {
+            debt[i++] = amount;
+        }
+        
+        return debt;
+    }
+
+48.Reverse Pairs
+Hard
+
+455
+
+67
+
+Favorite
+
+Share
+Given an array nums, we call (i, j) an important reverse pair if i < j and nums[i] > 2*nums[j].
+
+You need to return the number of important reverse pairs in the given array.
+
+Example1:
+
+Input: [1,3,2,3,1]
+Output: 2
+Example2:
+
+Input: [2,4,3,5,1]
+Output: 3
+Note:
+The length of the given array will not exceed 50,000.
+All the numbers in the input array are in the range of 32-bit integer.
+
+class Solution {
+    class SegmentTreeNode {
+        long min,max,count;
+        SegmentTreeNode left, right;
+        long mid() {
+            return ((max - min) / 2 + min);
+        }
+        SegmentTreeNode (long s, long e) {
+            min = s;
+            max = e;
+            count = 0;
+        }
+    }
+    
+    long find(double num, SegmentTreeNode root) {
+        if (root == null) {return 0;}
+        if (num > root.max) {return root.count;}
+        
+        long mid = root.mid();
+        if (num < mid) {
+            return find(num, root.left);
+        } else {
+            return find(num, root.left) + find(num, root.right); 
+        }
+    }
+    
+    void add(long x, SegmentTreeNode root) {
+        if (x < root.min || x > root.max) {return;}
+        root.count++;
+        if (root.min == root.max) {return;}
+        
+        long mid = root.mid();
+        if (x <= mid) {
+            if (root.left == null) {
+                root.left = new SegmentTreeNode(root.min, mid);
+            }
+            add(x, root.left);
+        } else {
+           if (root.right == null) {
+                root.right = new SegmentTreeNode(mid+1, root.max);
+            }
+            add(x, root.right); 
+        }
+        return;
+    }
+    
+    
+    
+    public int reversePairs(int[] a) {
+        if (a == null || a.length == 0) {return 0;}
+        
+        int min = Integer.MAX_VALUE, max = Integer.MIN_VALUE;
+        for (int i : a) {
+            min = min > i ? i : min;
+            max = max < i ? i : max;
+        }
+        
+        int res = 0;
+        SegmentTreeNode root = new SegmentTreeNode(min, max);
+        for (int i = a.length - 1; i >= 0; i--) {
+            res += find((long)(a[i])/2.0, root);
+            add((long)a[i], root);
+        }
+        return res;
+    }
+}
+
+49.Next Greater Element II
+Medium
+
+598
+
+37
+
+Favorite
+
+Share
+Given a circular array (the next element of the last element is the first element of the array), print the Next Greater Number for every element. The Next Greater Number of a number x is the first greater number to its traversing-order next in the array, which means you could search circularly to find its next greater number. If it doesn't exist, output -1 for this number.
+
+Example 1:
+Input: [1,2,1]
+Output: [2,-1,2]
+Explanation: The first 1's next greater number is 2; 
+The number 2 can't find next greater number; 
+The second 1's next greater number needs to search circularly, which is also 2.
+Note: The length of given array won't exceed 10000.
+
+class Solution {
+    public int[] nextGreaterElements(int[] nums) {
+        if (nums == null || nums.length == 0) {return new int[0];}
+        
+        Stack<Integer> stack = new Stack<>();
+        int n = nums.length;
+        
+        for (int i = n - 1; i >= 0; i--) {
+            stack.push(i);
+        }
+        
+        int[] res = new int[n];
+        for (int i = n -1; i >= 0; i--) {
+            res[i] = -1;
+            while (!stack.isEmpty() && nums[stack.peek()] <= nums[i]) {
+                stack.pop();
+            }
+            if (!stack.isEmpty()) {
+                res[i] = nums[stack.peek()];
+            }
+            stack.add(i);
+        }
+        return res;
+    }
+}
+
+50.Freedom Trail
+Hard
+
+260
+
+16
+
+Favorite
+
+Share
+In the video game Fallout 4, the quest "Road to Freedom" requires players to reach a metal dial called the "Freedom Trail Ring", and use the dial to spell a specific keyword in order to open the door.
+
+Given a string ring, which represents the code engraved on the outer ring and another string key, which represents the keyword needs to be spelled. You need to find the minimum number of steps in order to spell all the characters in the keyword.
+
+Initially, the first character of the ring is aligned at 12:00 direction. You need to spell all the characters in the string key one by one by rotating the ring clockwise or anticlockwise to make each character of the string key aligned at 12:00 direction and then by pressing the center button.
+
+At the stage of rotating the ring to spell the key character key[i]:
+
+You can rotate the ring clockwise or anticlockwise one place, which counts as 1 step. The final purpose of the rotation is to align one of the string ring's characters at the 12:00 direction, where this character must equal to the character key[i].
+If the character key[i] has been aligned at the 12:00 direction, you need to press the center button to spell, which also counts as 1 step. After the pressing, you could begin to spell the next character in the key (next stage), otherwise, you've finished all the spelling.
+Example:
+
+
+ 
+Input: ring = "godding", key = "gd"
+Output: 4
+Explanation:
+For the first key character 'g', since it is already in place, we just need 1 step to spell this character. 
+For the second key character 'd', we need to rotate the ring "godding" anticlockwise by two steps to make it become "ddinggo".
+Also, we need 1 more step for spelling.
+So the final output is 4.
+Note:
+
+Length of both ring and key will be in range 1 to 100.
+There are only lowercase letters in both strings and might be some duplcate characters in both strings.
+It's guaranteed that string key could always be spelled by rotating the string ring.
+
+class Solution {
+    public int findRotateSteps(String ring, String key) {
+        int m = key.length();
+        int n = ring.length();
+        
+        int[][] dp = new int[m+1][n];
+        
+        for (int i = m-1; i >= 0; i--) {
+            for (int j = 0; j < n; j++) {
+                dp[i][j] = Integer.MAX_VALUE;
+                for (int k = 0; k < n; k++) {
+                    if (ring.charAt(k) == key.charAt(i)) {
+                        int diff = Math.abs(j - k);
+                        int step = Math.min(diff, n - diff);
+                        dp[i][j] = Math.min(dp[i][j], step + dp[i+1][k]);   
+                    }  
+                }
+            }
+        }
+        return dp[0][0] + m;
+    }
+}
+
+
+51.Longest Palindromic Subsequence
+Medium
+
+793
+
+117
+
+Favorite
+
+Share
+Given a string s, find the longest palindromic subsequence's length in s. You may assume that the maximum length of s is 1000.
+
+Example 1:
+Input:
+
+"bbbab"
+Output:
+4
+One possible longest palindromic subsequence is "bbbb".
+Example 2:
+Input:
+
+"cbbd"
+Output:
+2
+One possible longest palindromic subsequence is "bb".
+
+class Solution {
+    int max = 0;
+    public int longestPalindromeSubseq(String s) {
+        if (s == null || s.length() == 0) {return 0;}
+        
+        int n = s.length();
+        int[][] dp = new int[n][n];
+        
+        for (int i = n-1; i >= 0; i--) {
+            dp[i][i] = 1;
+            for (int j = i+1; j < n; j++) {
+                if (s.charAt(i) == s.charAt(j)) {
+                    dp[i][j] = dp[i+1][j-1] + 2;
+                } else {
+                    dp[i][j] = Math.max(dp[i+1][j], dp[i][j-1]);
+                }
+            }
+        }
+        return dp[0][n-1];
+    }
+    
+}
+
+52.Remove Boxes
+Hard
+
+325
+
+32
+
+Favorite
+
+Share
+Given several boxes with different colors represented by different positive numbers. 
+You may experience several rounds to remove boxes until there is no box left. Each time you can choose some continuous boxes with the same color (composed of k boxes, k >= 1), remove them and get k*k points.
+Find the maximum points you can get.
+
+Example 1:
+Input:
+
+[1, 3, 2, 2, 2, 3, 4, 3, 1]
+Output:
+23
+Explanation:
+[1, 3, 2, 2, 2, 3, 4, 3, 1] 
+----> [1, 3, 3, 4, 3, 1] (3*3=9 points) 
+----> [1, 3, 3, 3, 1] (1*1=1 points) 
+----> [1, 1] (3*3=9 points) 
+----> [] (2*2=4 points)
+Note: The number of boxes n would not exceed 100.
+
+class Solution {
+    public int removeBoxes(int[] boxes) {
+        int n = boxes.length;
+        int[][][] dp = new int[n][n][n];
+        return removeBoxesSub(boxes, 0, n - 1, 0, dp);
+    }
+
+    private int removeBoxesSub(int[] boxes, int i, int j, int k, int[][][] dp) {
+        if (i > j) {return 0;}
+        if (dp[i][j][k] > 0) {return dp[i][j][k];}
+        
+        while (i + 1 <= j && boxes[i] == boxes[i+1]) {
+            i++;
+            k++;
+        }
+        int res = (k+1)*(k+1) + removeBoxesSub(boxes, i + 1, j, 0, dp);
+        for (int m = i + 1; m <= j; m++) {
+            if (boxes[m] == boxes[i]) {
+                res = Math.max(res, removeBoxesSub(boxes, i+1, m-1, 0,dp) + removeBoxesSub(boxes, m, j, k+1,dp));
+            }
+        }
+        dp[i][j][k] = res;
+        return res;
+    }
+}
+
+53.Array Nesting
+Medium
+
+504
+
+68
+
+Favorite
+
+Share
+A zero-indexed array A of length N contains all integers from 0 to N-1. Find and return the longest length of set S, where S[i] = {A[i], A[A[i]], A[A[A[i]]], ... } subjected to the rule below.
+
+Suppose the first element in S starts with the selection of element A[i] of index = i, the next element in S should be A[A[i]], and then A[A[A[i]]]… By that analogy, we stop adding right before a duplicate element occurs in S.
+
+ 
+
+Example 1:
+
+Input: A = [5,4,0,3,1,6,2]
+Output: 4
+Explanation: 
+A[0] = 5, A[1] = 4, A[2] = 0, A[3] = 3, A[4] = 1, A[5] = 6, A[6] = 2.
+
+One of the longest S[K]:
+S[0] = {A[0], A[5], A[6], A[2]} = {5, 6, 2, 0}
+ 
+
+Note:
+
+N is an integer within the range [1, 20,000].
+The elements of A are all distinct.
+Each element of A is an integer within the range [0, N-1].
+
+class Solution {
+    public int arrayNesting(int[] a) {
+        if (a == null || a.length == 0) {return 0;}
+        
+        int res = 0;
+        for (int i = 0; i < a.length; i++) {
+            int size = 0;
+            int k = i;
+            while (a[k] >= 0) {
+                size ++;
+                int ak = a[k];
+                a[k] = -1;
+                k = ak;
+            }
+            res = Math.max(res, size);
+        }
+        return res;
+    }
+}
+
+54.Permutation in String
+Medium
+
+562
+
+33
+
+Favorite
+
+Share
+Given two strings s1 and s2, write a function to return true if s2 contains the permutation of s1. In other words, one of the first string's permutations is the substring of the second string.
+Example 1:
+Input:s1 = "ab" s2 = "eidbaooo"
+Output:True
+Explanation: s2 contains one permutation of s1 ("ba").
+Example 2:
+Input:s1= "ab" s2 = "eidboaoo"
+Output: False
+Note:
+The input strings only contain lower case letters.
+The length of both given strings is in range [1, 10,000]
+
+class Solution {
+    public boolean checkInclusion(String s1, String s2) {
+        int len1 = s1.length(), len2 = s2.length();
+        if (len1 > len2) return false;
+        
+        int[] count = new int[26];
+        for (int i = 0; i < len1; i++) {
+            count[s1.charAt(i) - 'a']++;
+            count[s2.charAt(i) - 'a']--;
+        }
+        if (allZero(count)) return true;
+        
+        for (int i = len1; i < len2; i++) {
+            count[s2.charAt(i) - 'a']--;
+            count[s2.charAt(i - len1) - 'a']++;
+            if (allZero(count)) return true;
+        }
+        
+        return false;
+    }
+    
+    private boolean allZero(int[] count) {
+        for (int i = 0; i < 26; i++) {
+            if (count[i] != 0) return false;
+        }
+        return true;
+    }
+    
+}
+
+55.Delete Operation for Two Strings
+Medium
+
+638
+
+17
+
+Favorite
+
+Share
+Given two words word1 and word2, find the minimum number of steps required to make word1 and word2 the same, where in each step you can delete one character in either string.
+
+Example 1:
+Input: "sea", "eat"
+Output: 2
+Explanation: You need one step to make "sea" to "ea" and another step to make "eat" to "ea".
+Note:
+The length of given words won't exceed 500.
+Characters in given words can only be lower-case letters.
+
+class Solution {
+    public int minDistance(String s1, String s2) {
+        
+        //Longest Common Subsequence
+        int dp[][] = new int[s1.length()+1][s2.length()+1];
+        for (int i = 0; i <= s1.length(); i++) {
+            for (int j =0; j <= s2.length(); j++) {
+                if (i == 0 || j == 0) {
+                    dp[i][j] = 0;
+                } else {
+                    dp[i][j] = s1.charAt(i-1) == s2.charAt(j-1) ? dp[i-1][j-1] + 1 : Math.max(dp[i][j-1], dp[i-1][j]);
+                }
+            }
+        }
+        return -dp[s1.length()][s2.length()]*2 + s1.length() + s2.length();
+    }
+}
+
+56.Task Scheduler
+Medium
+
+1449
+
+242
+
+Favorite
+
+Share
+Given a char array representing tasks CPU need to do. It contains capital letters A to Z where different letters represent different tasks. Tasks could be done without original order. Each task could be done in one interval. For each interval, CPU could finish one task or just be idle.
+
+However, there is a non-negative cooling interval n that means between two same tasks, there must be at least n intervals that CPU are doing different tasks or just be idle.
+
+You need to return the least number of intervals the CPU will take to finish all the given tasks.
+
+ 
+
+Example:
+
+Input: tasks = ["A","A","A","B","B","B"], n = 2
+Output: 8
+Explanation: A -> B -> idle -> A -> B -> idle -> A -> B.
+ 
+
+Note:
+
+The number of tasks is in the range [1, 10000].
+The integer n is in the range [0, 100].
+
+class Solution {
+ 
+    
+    public int leastInterval(char[] tasks, int n) {
+
+        int[] c = new int[26];
+        for(char t : tasks){
+            c[t - 'A']++;
+        }
+        Arrays.sort(c);
+        int i = 25;
+        while(i >= 0 && c[i] == c[25]) i--;
+
+        return Math.max(tasks.length, (c[25] - 1) * (n + 1) + 25 - i);
+    }
+    
+}
+
+
+57.Minimum Factorization
+Medium
+
+63
+
+52
+
+Favorite
+
+Share
+Given a positive integer a, find the smallest positive integer b whose multiplication of each digit equals to a.
+
+If there is no answer or the answer is not fit in 32-bit signed integer, then return 0.
+
+Example 1
+Input:
+
+48 
+Output:
+68
+Example 2
+Input:
+
+15
+Output:
+35
+
+public class Solution {
+    public int smallestFactorization(int n) {
+        // Case 1: If number is smaller than 10
+        if (n < 10) return n;
+        
+        // Case 2: Start with 9 and try every possible digit
+        List<Integer> res = new ArrayList<>();
+        for (int i = 9; i > 1; i--) {
+            // If current digit divides n, then store all
+            // occurrences of current digit in res
+            while (n % i == 0) {
+                n = n / i;
+                res.add(i);
+            }
+        }
+
+        // If n could not be broken in form of digits
+        if (n != 1) return 0;
+
+        // Get the result from the array in reverse order
+        long result = 0;
+        for (int i = res.size() - 1; i >= 0; i--) {
+            result = result * 10 + res.get(i);
+            if (result > Integer.MAX_VALUE) return 0;
+        }
+        
+        return (int)result;
+    }
+}
+
+58. Find Duplicate Subtrees
+Medium
+
+690
+
+139
+
+Favorite
+
+Share
+Given a binary tree, return all duplicate subtrees. For each kind of duplicate subtrees, you only need to return the root node of any one of them.
+
+Two trees are duplicate if they have the same structure with same node values.
+
+Example 1:
+
+        1
+       / \
+      2   3
+     /   / \
+    4   2   4
+       /
+      4
+The following are two duplicate subtrees:
+
+      2
+     /
+    4
+and
+
+    4
+Therefore, you need to return above trees' root in the form of a list.
+
+
+class Solution {
+    public List<TreeNode> findDuplicateSubtrees(TreeNode root) {
+        List<TreeNode> res = new ArrayList<>();
+        dfs(root, new HashMap<>(), res);
+        return res;
+    }
+    
+    String dfs(TreeNode root, Map<String, Integer> map, List<TreeNode> rst) {
+        if (root == null) {return "#";}
+        String serial = root.val + "," + dfs(root.left, map, rst) + "," + dfs(root.right, map, rst);
+        if(map.getOrDefault(serial, 0) == 1){rst.add(root);}
+        map.put(serial, map.getOrDefault(serial, 0) + 1);
+        
+        return serial;
+    }
+}
+
+59.Find K Closest Elements
+Medium
+
+593
+
+130
+
+Favorite
+
+Share
+Given a sorted array, two integers k and x, find the k closest elements to x in the array. The result should also be sorted in ascending order. If there is a tie, the smaller elements are always preferred.
+
+Example 1:
+Input: [1,2,3,4,5], k=4, x=3
+Output: [1,2,3,4]
+Example 2:
+Input: [1,2,3,4,5], k=4, x=-1
+Output: [1,2,3,4]
+Note:
+The value k is positive and will always be smaller than the length of the sorted array.
+Length of the given array is positive and will not exceed 104
+Absolute value of elements in the array and x will not exceed 104
+UPDATE (2017/9/19):
+The arr parameter had been changed to an array of integers (instead of a list of integers). Please reload the code definition to get the latest changes.
+
+class Solution {
+    public List<Integer> findClosestElements(int[] arr, int k, int x) {
+        List<Integer> res = new ArrayList<>();
+        if (arr == null || arr.length == 0) {return res;}
+        
+        int idx = -1;
+        int start = 0, end = arr.length-1;
+        while (start + 1 < end) {
+            int mid = start + (end - start)/2;
+            if (arr[mid] == x) {
+                idx = mid;
+                break;
+            } else if (arr[mid] > x) {
+                end = mid - 1;
+            } else {
+                start = mid + 1;
+            }
+        }
+        
+        if (idx == -1) {
+            if (Math.abs(arr[start] - x) < Math.abs(arr[end] - x)) {idx = start;}
+            else {idx = end;}
+        } 
+        
+        int i = idx, j = idx+1;
+        while (k > 0) {
+            if (i < 0) {res.add(arr[j++]);}
+            else if (j >= arr.length) {
+                res.add(arr[i--]);
+            } else if (Math.abs(arr[i] - x) <= Math.abs(arr[j] - x)) {
+                res.add(arr[i--]);
+            } else if (Math.abs(arr[i] - x) > Math.abs(arr[j] - x)) {
+                res.add(arr[j++]);
+            }
+            k--;
+        }
+        Collections.sort(res);
+        return res;
+    }
+}
+
+60.Split Array into Consecutive Subsequences
+Medium
+
+470
+
+199
+
+Favorite
+
+Share
+You are given an integer array sorted in ascending order (may contain duplicates), you need to split them into several subsequences, where each subsequences consist of at least 3 consecutive integers. Return whether you can make such a split.
+
+Example 1:
+Input: [1,2,3,3,4,5]
+Output: True
+Explanation:
+You can split them into two consecutive subsequences : 
+1, 2, 3
+3, 4, 5
+Example 2:
+Input: [1,2,3,3,4,4,5,5]
+Output: True
+Explanation:
+You can split them into two consecutive subsequences : 
+1, 2, 3, 4, 5
+3, 4, 5
+Example 3:
+Input: [1,2,3,4,4,5]
+Output: False
+Note:
+The length of the input is in range of [1, 10000]
+
+class Solution {
+    public boolean isPossible(int[] nums) {
+        Map<Integer, Integer> freq = new HashMap<>(), appendfreq = new HashMap<>();
+        for (int i : nums) freq.put(i, freq.getOrDefault(i,0) + 1);
+        for (int i : nums) {
+            if (freq.get(i) == 0) continue;
+            else if (appendfreq.getOrDefault(i,0) > 0) {
+                appendfreq.put(i, appendfreq.get(i) - 1);
+                appendfreq.put(i+1, appendfreq.getOrDefault(i+1,0) + 1);
+            }   
+            else if (freq.getOrDefault(i+1,0) > 0 && freq.getOrDefault(i+2,0) > 0) {
+                freq.put(i+1, freq.get(i+1) - 1);
+                freq.put(i+2, freq.get(i+2) - 1);
+                appendfreq.put(i+3, appendfreq.getOrDefault(i+3,0) + 1);
+            }
+            else return false;
+            freq.put(i, freq.get(i) - 1);
+        }
+        return true;
+    }
+}
+
+

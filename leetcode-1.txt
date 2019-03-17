@@ -1,0 +1,1143 @@
+
+1. Median of Two Sorted Arrays
+Hard
+
+3859
+
+505
+
+Favorite
+
+Share
+There are two sorted arrays nums1 and nums2 of size m and n respectively.
+
+Find the median of the two sorted arrays. The overall run time complexity should be O(log (m+n)).
+
+You may assume nums1 and nums2 cannot be both empty.
+
+Example 1:
+
+nums1 = [1, 3]
+nums2 = [2]
+
+The median is 2.0
+Example 2:
+
+nums1 = [1, 2]
+nums2 = [3, 4]
+
+The median is (2 + 3)/2 = 2.5
+
+
+public double findMedianSortedArrays(int[] A, int[] B) {
+	    int m = A.length, n = B.length;
+	    int l = (m + n + 1) / 2;
+	    int r = (m + n + 2) / 2;
+	    return (getkth(A, 0, B, 0, l) + getkth(A, 0, B, 0, r)) / 2.0;
+	}
+
+public double getkth(int[] A, int aStart, int[] B, int bStart, int k) {
+	if (aStart > A.length - 1) return B[bStart + k - 1];            
+	if (bStart > B.length - 1) return A[aStart + k - 1];                
+	if (k == 1) return Math.min(A[aStart], B[bStart]);
+	
+	int aMid = Integer.MAX_VALUE, bMid = Integer.MAX_VALUE;
+	if (aStart + k/2 - 1 < A.length) aMid = A[aStart + k/2 - 1]; 
+	if (bStart + k/2 - 1 < B.length) bMid = B[bStart + k/2 - 1];        
+	
+	if (aMid < bMid) 
+	    return getkth(A, aStart + k/2, B, bStart,       k - k/2);// Check: aRight + bLeft 
+	else 
+	    return getkth(A, aStart,       B, bStart + k/2, k - k/2);// Check: bRight + aLeft
+}
+
+2.. First Missing Positive
+Hard
+
+1424
+
+507
+
+Favorite
+
+Share
+Given an unsorted integer array, find the smallest missing positive integer.
+
+Example 1:
+
+Input: [1,2,0]
+Output: 3
+Example 2:
+
+Input: [3,4,-1,1]
+Output: 2
+Example 3:
+
+Input: [7,8,9,11,12]
+Output: 1
+Note:
+
+Your algorithm should run in O(n) time and uses constant extra space.
+
+class Solution {
+    public int firstMissingPositive(int[] nums) {
+        int n = nums.length;
+        //将正数移到前边，并且得到正数的个数
+        int k = positiveNumber(nums);
+        for (int i = 0; i < k; i++) {
+            //得到要标记的下标
+            int index = Math.abs(nums[i]) - 1;
+            if (index < k) {
+                //判断要标记的位置的数是不是小于 0，不是小于 0 就取相反数
+                int temp = Math.abs(nums[index]);
+                nums[index] = temp < 0 ? temp : -temp;
+            }
+        }
+        //找到第一个大于 0 的位置
+        for (int i = 0; i < k; i++) {
+            if (nums[i] > 0) {
+                return i + 1;
+            }
+        }
+        return k + 1;
+    }
+
+    private int positiveNumber(int[] nums) {
+
+        int n = nums.length;
+        int p = 0;
+        for (int i = 0; i < n; i++) {
+            if (nums[i] > 0) {
+                swap(nums, i, p);
+                p++;
+            }
+        }
+        return p;
+
+    }
+
+    private void swap(int[] nums, int i, int j) {
+        int temp = nums[i];
+        nums[i] = nums[j];
+        nums[j] = temp;
+    }
+
+}
+
+3.Spiral Matrix II
+Medium
+
+393
+
+73
+
+Favorite
+
+Share
+Given a positive integer n, generate a square matrix filled with elements from 1 to n2 in spiral order.
+
+Example:
+
+Input: 3
+Output:
+[
+ [ 1, 2, 3 ],
+ [ 8, 9, 4 ],
+ [ 7, 6, 5 ]
+]
+
+ vector<vector<int> > generateMatrix(int n) {
+            int dir = 0;
+            vector< vector<int> > matrix(n, vector<int> (n, 0));
+            int i = 0, j = 0, k = 1;
+            while (k <= n * n) {
+                matrix[i][j] = k++;
+                if (dir == 0){
+                    j++;
+                    if (j == n || matrix[i][j] != 0) dir = 1, j--, i++;
+                } else
+                if (dir == 1) {
+                    i++;
+                    if (i == n || matrix[i][j] != 0) dir = 2, i--, j--;
+                } else
+                if (dir == 2) {
+                    j--;
+                    if (j < 0 || matrix[i][j] != 0) dir = 3, j++, i--;
+                } else
+                if (dir == 3) {
+                    i--;
+                    if (i < 0 || matrix[i][j] != 0) dir = 0, i++, j++;
+                }
+            }
+            return matrix;
+        }
+
+
+
+4.Remove Duplicates from Sorted List II
+Medium
+
+717
+
+68
+
+Favorite
+
+Share
+Given a sorted linked list, delete all nodes that have duplicate numbers, leaving only distinct numbers from the original list.
+
+Example 1:
+
+Input: 1->2->3->3->4->4->5
+Output: 1->2->5
+Example 2:
+
+Input: 1->1->1->2->3
+Output: 2->3
+
+public ListNode deleteDuplicates(ListNode head) {
+        if(head==null) return null;
+        ListNode FakeHead=new ListNode(0);
+        FakeHead.next=head;
+        ListNode pre=FakeHead;
+        ListNode cur=head;
+        while(cur!=null){
+            while(cur.next!=null&&cur.val==cur.next.val){
+                cur=cur.next;
+            }
+            if(pre.next==cur){
+                pre=pre.next;
+            }
+            else{
+                pre.next=cur.next;
+            }
+            cur=cur.next;
+        }
+        return FakeHead.next;
+    }
+
+5.Largest Rectangle in Histogram
+
+6.Decode Ways
+Medium
+
+1227
+
+1412
+
+Favorite
+
+Share
+A message containing letters from A-Z is being encoded to numbers using the following mapping:
+
+'A' -> 1
+'B' -> 2
+...
+'Z' -> 26
+Given a non-empty string containing only digits, determine the total number of ways to decode it.
+
+Example 1:
+
+Input: "12"
+Output: 2
+Explanation: It could be decoded as "AB" (1 2) or "L" (12).
+Example 2:
+
+Input: "226"
+Output: 3
+Explanation: It could be decoded as "BZ" (2 26), "VF" (22 6), or "BBF" (2 2 6).
+
+public class Solution {
+    public int numDecodings(String s) {
+        int n = s.length();
+        if (n == 0) return 0;
+        
+        int[] memo = new int[n+1];
+        memo[n]  = 1;
+        memo[n-1] = s.charAt(n-1) != '0' ? 1 : 0;
+        
+        for (int i = n - 2; i >= 0; i--)
+            if (s.charAt(i) == '0') continue;
+            else memo[i] = (Integer.parseInt(s.substring(i,i+2))<=26) ? memo[i+1]+memo[i+2] : memo[i+1];
+        
+        return memo[0];
+    }
+}
+
+7.Validate Binary Search Tree
+Medium
+
+1700
+
+258
+
+Favorite
+
+Share
+Given a binary tree, determine if it is a valid binary search tree (BST).
+
+Assume a BST is defined as follows:
+
+The left subtree of a node contains only nodes with keys less than the node's key.
+The right subtree of a node contains only nodes with keys greater than the node's key.
+Both the left and right subtrees must also be binary search trees.
+Example 1:
+
+Input:
+    2
+   / \
+  1   3
+Output: true
+Example 2:
+
+    5
+   / \
+  1   4
+     / \
+    3   6
+Output: false
+Explanation: The input is: [5,1,4,null,null,3,6]. The root node's value
+             is 5 but its right child's value is 4.
+
+class Solution {
+    public boolean isValidBST(TreeNode root) {
+        if (root == null) {return true;}
+        
+        return helper(root, Long.MIN_VALUE, Long.MAX_VALUE);
+    }
+    
+    boolean helper(TreeNode root, long min, long max) {
+        if (root == null) {return true;}
+        if ((long)root.val <= min || (long)root.val >= max) {return false;}
+        
+        return helper(root.left, min, (long)root.val) && helper(root.right, (long)root.val, max);
+    }
+}
+
+8.Distinct Subsequences
+Hard
+
+618
+
+31
+
+Favorite
+
+Share
+Given a string S and a string T, count the number of distinct subsequences of S which equals T.
+
+A subsequence of a string is a new string which is formed from the original string by deleting some (can be none) of the characters without disturbing the relative positions of the remaining characters. (ie, "ACE" is a subsequence of "ABCDE" while "AEC" is not).
+
+Example 1:
+
+Input: S = "rabbbit", T = "rabbit"
+Output: 3
+Explanation:
+
+As shown below, there are 3 ways you can generate "rabbit" from S.
+(The caret symbol ^ means the chosen letters)
+
+rabbbit
+^^^^ ^^
+rabbbit
+^^ ^^^^
+rabbbit
+^^^ ^^^
+Example 2:
+
+Input: S = "babgbag", T = "bag"
+Output: 5
+Explanation:
+
+As shown below, there are 5 ways you can generate "bag" from S.
+(The caret symbol ^ means the chosen letters)
+
+babgbag
+^^ ^
+babgbag
+^^    ^
+babgbag
+^    ^^
+babgbag
+  ^  ^^
+babgbag
+    ^^^
+
+class Solution {
+    public int numDistinct(String s, String t) {
+        int m = s.length();
+        int n = t.length();
+        
+        int[][] dp = new int[n+1][m+1];
+        for (int i = 0; i < m+1; i++) {dp[0][i] = 1;}
+        
+        for (int i = 1; i <= n; i++) {
+            for (int j = 1; j <= m; j++) {
+                if (s.charAt(j-1) == t.charAt(i-1)) {
+                    dp[i][j] = dp[i-1][j-1] + dp[i][j-1];
+                } else {
+                    dp[i][j] = dp[i][j-1]; 
+                }
+            }
+        }
+        return dp[n][m];
+    }
+}
+
+9.Best Time to Buy and Sell Stock III
+Hard
+
+917
+
+52
+
+Favorite
+
+Share
+Say you have an array for which the ith element is the price of a given stock on day i.
+
+Design an algorithm to find the maximum profit. You may complete at most two transactions.
+
+Note: You may not engage in multiple transactions at the same time (i.e., you must sell the stock before you buy again).
+
+Example 1:
+
+Input: [3,3,5,0,0,3,1,4]
+Output: 6
+Explanation: Buy on day 4 (price = 0) and sell on day 6 (price = 3), profit = 3-0 = 3.
+             Then buy on day 7 (price = 1) and sell on day 8 (price = 4), profit = 4-1 = 3.
+Example 2:
+
+Input: [1,2,3,4,5]
+Output: 4
+Explanation: Buy on day 1 (price = 1) and sell on day 5 (price = 5), profit = 5-1 = 4.
+             Note that you cannot buy on day 1, buy on day 2 and sell them later, as you are
+             engaging multiple transactions at the same time. You must sell before buying again.
+Example 3:
+
+Input: [7,6,4,3,1]
+Output: 0
+Explanation: In this case, no transaction is done, i.e. max profit = 0.
+
+class Solution {
+    public int maxProfit(int[] p) {
+        if (p == null || p.length <= 1) {return 0;}
+        int m = 2;
+        int n = p.length;
+        
+        int[][] dp = new int[m+1][n];
+        for (int i = 0; i <= m; i++) {
+            dp[i][0] = 0;
+        }
+        for (int i = 0; i < n; i++) {
+            dp[0][i] = 0;
+        }
+        
+        for (int i = 1; i <= m; i++) {
+            int maxDiff = Integer.MIN_VALUE;
+            for (int j = 1; j < n; j++) {
+                maxDiff = Math.max(maxDiff, dp[i-1][j-1] - p[j-1]);
+                dp[i][j] = Math.max(dp[i][j-1], p[j] + maxDiff);
+            }
+        }
+        return dp[m][n-1];
+    }
+}
+
+10. Binary Tree Maximum Path Sum
+Hard
+
+1334
+
+96
+
+Favorite
+
+Share
+Given a non-empty binary tree, find the maximum path sum.
+
+For this problem, a path is defined as any sequence of nodes from some starting node to any node in the tree along the parent-child connections. The path must contain at least one node and does not need to go through the root.
+
+Example 1:
+
+Input: [1,2,3]
+
+       1
+      / \
+     2   3
+
+Output: 6
+Example 2:
+
+Input: [-10,9,20,null,null,15,7]
+
+   -10
+   / \
+  9  20
+    /  \
+   15   7
+
+Output: 42
+
+class Solution {
+    int maxValue;
+    
+    public int maxPathSum(TreeNode root) {
+        maxValue = Integer.MIN_VALUE;
+        getMaxPath(root);
+        return maxValue;
+    }
+    
+    int getMaxPath(TreeNode root) {
+        if (root == null) {return 0;}
+        int left = Math.max(0, getMaxPath(root.left));
+        int right = Math.max(0, getMaxPath(root.right));
+        maxValue = Math.max(maxValue, left + right + root.val);
+
+        return Math.max(left, right) + root.val;
+    }
+    
+    
+}
+
+11.Surrounded Regions
+Medium
+
+664
+
+395
+
+Favorite
+
+Share
+Given a 2D board containing 'X' and 'O' (the letter O), capture all regions surrounded by 'X'.
+
+A region is captured by flipping all 'O's into 'X's in that surrounded region.
+
+Example:
+
+X X X X
+X O O X
+X X O X
+X O X X
+After running your function, the board should be:
+
+X X X X
+X X X X
+X X X X
+X O X X
+Explanation:
+
+Surrounded regions shouldn’t be on the border, which means that any 'O' on the border of the board are not flipped to 'X'. Any 'O' that is not on the border and it is not connected to an 'O' on the border will be flipped to 'X'. Two cells are connected if they are adjacent cells connected horizontally or vertically.
+
+
+class UF
+{
+private:
+	int* id;     // id[i] = parent of i
+	int* rank;  // rank[i] = rank of subtree rooted at i (cannot be more than 31)
+	int count;    // number of components
+public:
+	UF(int N)
+	{
+		count = N;
+		id = new int[N];
+		rank = new int[N];
+		for (int i = 0; i < N; i++) {
+			id[i] = i;
+			rank[i] = 0;
+		}
+	}
+	~UF()
+	{
+		delete [] id;
+		delete [] rank;
+	}
+	int find(int p) {
+		while (p != id[p]) {
+			id[p] = id[id[p]];    // path compression by halving
+			p = id[p];
+		}
+		return p;
+	}
+	int getCount() {
+		return count;
+	}
+	bool connected(int p, int q) {
+		return find(p) == find(q);
+	}
+	void connect(int p, int q) {
+		int i = find(p);
+		int j = find(q);
+		if (i == j) return;
+		if (rank[i] < rank[j]) id[i] = j;
+		else if (rank[i] > rank[j]) id[j] = i;
+		else {
+			id[j] = i;
+			rank[i]++;
+		}
+		count--;
+	}
+};
+
+class Solution {
+public:
+    void solve(vector<vector<char>> &board) {
+        int n = board.size();
+        if(n==0)    return;
+        int m = board[0].size();
+        UF uf = UF(n*m+1);
+        
+        for(int i=0;i<n;i++){
+            for(int j=0;j<m;j++){
+                if((i==0||i==n-1||j==0||j==m-1)&&board[i][j]=='O') // if a 'O' node is on the boundry, connect it to the dummy node
+                    uf.connect(i*m+j,n*m);
+                else if(board[i][j]=='O') // connect a 'O' node to its neighbour 'O' nodes
+                {
+                    if(board[i-1][j]=='O')
+                        uf.connect(i*m+j,(i-1)*m+j);
+                    if(board[i+1][j]=='O')
+                        uf.connect(i*m+j,(i+1)*m+j);
+                    if(board[i][j-1]=='O')
+                        uf.connect(i*m+j,i*m+j-1);
+                    if(board[i][j+1]=='O')
+                        uf.connect(i*m+j,i*m+j+1);
+                }
+            }
+        }
+        
+        for(int i=0;i<n;i++){
+            for(int j=0;j<m;j++){
+                if(!uf.connected(i*m+j,n*m)){ // if a 'O' node is not connected to the dummy node, it is captured
+                    board[i][j]='X';
+                }
+            }
+        }
+    }
+};
+
+12. Single Number II
+Medium
+
+712
+
+236
+
+Favorite
+
+Share
+Given a non-empty array of integers, every element appears three times except for one, which appears exactly once. Find that single one.
+
+Note:
+
+Your algorithm should have a linear runtime complexity. Could you implement it without using extra memory?
+
+Example 1:
+
+Input: [2,2,3,2]
+Output: 3
+Example 2:
+
+Input: [0,1,0,1,0,1,99]
+Output: 99
+
+class Solution {
+    public int singleNumber(int[] nums) {
+        int one = 0, two = 0, three = 0;
+        for (int i : nums) {
+            two |= (i & one);
+            one ^= i;
+            three = (two & one);
+            one ^= three;
+            two ^= three;
+        }
+        return one;
+    }
+}
+
+13.Missing Ranges
+Medium
+
+176
+
+1069
+
+Favorite
+
+Share
+Given a sorted integer array nums, where the range of elements are in the inclusive range [lower, upper], return its missing ranges.
+
+Example:
+
+Input: nums = [0, 1, 3, 50, 75], lower = 0 and upper = 99,
+Output: ["2", "4->49", "51->74", "76->99"]
+
+public List<String> findMissingRanges(int[] a, int lo, int hi) {
+  List<String> res = new ArrayList<String>();
+  
+  // the next number we need to find
+  int next = lo;
+  
+  for (int i = 0; i < a.length; i++) {
+    // not within the range yet
+    if (a[i] < next) continue;
+    
+    // continue to find the next one
+    if (a[i] == next) {
+      next++;
+      continue;
+    }
+    
+    // get the missing range string format
+    res.add(getRange(next, a[i] - 1));
+    
+    // now we need to find the next number
+    next = a[i] + 1;
+  }
+  
+  // do a final check
+  if (next <= hi) res.add(getRange(next, hi));
+
+  return res;
+}
+
+String getRange(int n1, int n2) {
+  return (n1 == n2) ? String.valueOf(n1) : String.format("%d->%d", n1, n2);
+}
+
+14.Majority Element
+Easy
+
+1452
+
+129
+
+Favorite
+
+Share
+Given an array of size n, find the majority element. The majority element is the element that appears more than ⌊ n/2 ⌋ times.
+
+You may assume that the array is non-empty and the majority element always exist in the array.
+
+Example 1:
+
+Input: [3,2,3]
+Output: 3
+Example 2:
+
+Input: [2,2,1,1,1,2,2]
+Output: 2
+
+class Solution {
+    public int majorityElement(int[] num) {
+        int major=num[0], count = 1;
+        for(int i=1; i<num.length;i++){
+            if(count==0){
+                count++;
+                major=num[i];
+            }else if(major==num[i]){
+                count++;
+            }else count--;
+            
+        }
+        return major;
+
+    }
+    
+}
+
+15.Bitwise AND of Numbers Range
+Medium
+
+359
+
+49
+
+Favorite
+
+Share
+Given a range [m, n] where 0 <= m <= n <= 2147483647, return the bitwise AND of all numbers in this range, inclusive.
+
+Example 1:
+
+Input: [5,7]
+Output: 4
+Example 2:
+
+Input: [0,1]
+Output: 0
+
+class Solution {
+    public int rangeBitwiseAnd(int m, int n) {
+        int tmp = 1;
+        while (m != n) {
+            m >>= 1;
+            n >>= 1;
+            tmp <<= 1;
+        }
+        return m*tmp;
+    }
+}
+
+16. Count Primes
+Easy
+
+918
+
+370
+
+Favorite
+
+Share
+Count the number of prime numbers less than a non-negative number, n.
+
+Example:
+
+Input: 10
+Output: 4
+Explanation: There are 4 prime numbers less than 10, they are 2, 3, 5, 7.
+
+class Solution {
+    public int countPrimes(int n) {
+        boolean[] notPrime = new boolean[n];
+        int count = 0;
+        for (int i = 2; i < n; i++) {
+            if (notPrime[i] == false) {
+                count++;
+                for (int j = 2; i*j < n; j++) {
+                    notPrime[i*j] = true;
+                }
+            }
+        }
+        
+        return count;
+    }
+}
+
+17.Add and Search Word - Data structure design
+Medium
+
+734
+
+47
+
+Favorite
+
+Share
+Design a data structure that supports the following two operations:
+
+void addWord(word)
+bool search(word)
+search(word) can search a literal word or a regular expression string containing only letters a-z or .. A . means it can represent any one letter.
+
+Example:
+
+addWord("bad")
+addWord("dad")
+addWord("mad")
+search("pad") -> false
+search("bad") -> true
+search(".ad") -> true
+search("b..") -> true
+Note:
+You may assume that all words are consist of lowercase letters a-z.
+
+class WordDictionary {
+    
+    class TrieNode {
+        boolean hasWord;
+        Map<Character, TrieNode> node;
+        TrieNode () {
+            hasWord = false;
+            node = new HashMap<Character, TrieNode>();
+        }
+    }
+    
+    TrieNode trie;
+    /** Initialize your data structure here. */
+    public WordDictionary() {
+        trie = new TrieNode();
+    }
+    
+    /** Adds a word into the data structure. */
+    public void addWord(String s) {
+        TrieNode root = trie;
+        for (char ch : s.toCharArray()) {
+            if (!root.node.containsKey(ch)) {
+                root.node.put(ch, new TrieNode());
+            } 
+            root = root.node.get(ch);
+        }
+        root.hasWord = true;
+        return;
+    }
+    
+    /** Returns if the word is in the data structure. A word could contain the dot character '.' to represent any one letter. */
+    public boolean search(String s) {
+        return helper(trie, s, 0);
+    }
+    
+    public boolean helper(TrieNode trie, String s, int index) {
+        TrieNode root = trie;
+        if (index == s.length()) {
+            return root.hasWord;
+        }
+        
+        if (s.charAt(index) == '.') {
+            for (Character ch: trie.node.keySet()) {
+                if (helper(trie.node.get(ch), s, index+1)) {
+                    return true;
+                }
+            }
+            return false;
+        } 
+        
+        if (!root.node.containsKey(s.charAt(index))) {
+            return false;
+        } else {
+            root = root.node.get(s.charAt(index));
+        }
+        return helper(root, s, index+1);
+
+
+        
+    }
+}
+
+/**
+ * Your WordDictionary object will be instantiated and called as such:
+ * WordDictionary obj = new WordDictionary();
+ * obj.addWord(word);
+ * boolean param_2 = obj.search(word);
+ */
+
+18. Word Search II
+Hard
+
+944
+
+60
+
+Favorite
+
+Share
+Given a 2D board and a list of words from the dictionary, find all words in the board.
+
+Each word must be constructed from letters of sequentially adjacent cell, where "adjacent" cells are those horizontally or vertically neighboring. The same letter cell may not be used more than once in a word.
+
+Example:
+
+Input: 
+words = ["oath","pea","eat","rain"] and board =
+[
+  ['o','a','a','n'],
+  ['e','t','a','e'],
+  ['i','h','k','r'],
+  ['i','f','l','v']
+]
+
+Output: ["eat","oath"]
+
+class Solution {
+    class TrieNode {
+        boolean hasWord;
+        Map<Character, TrieNode> children;
+        TrieNode () {
+            hasWord = false;
+            children = new HashMap<Character, TrieNode>();
+        }
+    }
+    
+    void insert(String s, TrieNode trie) {
+        TrieNode root = trie;
+        for (Character ch: s.toCharArray()) {
+            if (!root.children.containsKey(ch)) {
+                root.children.put(ch, new TrieNode());
+            }
+            root = root.children.get(ch);
+        }
+        root.hasWord = true;
+        return;
+    }
+    
+    boolean query(String s, TrieNode trie) {
+        TrieNode root = trie;
+        for (Character ch: s.toCharArray()) {
+            if (!root.children.containsKey(ch)) {
+                return false;
+            }
+            root = root.children.get(ch);
+        }
+        return root.hasWord;
+    }
+    
+    public List<String> findWords(char[][] board, String[] words) {
+        Set<String> res = new HashSet<>();
+        if (board == null || board.length == 0 || board[0] == null || board[0].length == 0 || words == null || words.length == 0) {return new ArrayList<>(res);}
+        
+        int m = board.length;
+        int n = board[0].length;
+        boolean[][] visited = new boolean[m][n];
+        
+        TrieNode root = new TrieNode();
+        for (String word: words) {
+            insert(word, root);
+        }
+        
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                dfs(board, visited, i, j, root, "", res);
+            }
+        }
+        
+        return new ArrayList<>(res);
+    }
+    
+    int[] dx = {-1, 0, 0, 1};
+    int[] dy = {0, -1, 1, 0};
+    
+    void dfs(char[][] board, boolean[][] visited, int x, int y, TrieNode root, String str, Set<String> res) {
+        int m = board.length;
+        int n = board[0].length;
+        if (x < 0 || x >= m || y < 0 || y >= n || visited[x][y]) {return;}
+        
+        if(root.children.get(board[x][y]) == null){
+            return;
+        }
+        root = root.children.get(board[x][y]);
+        
+        visited[x][y] = true;
+        if (root.hasWord) {
+            res.add(str + board[x][y]);
+        }
+        dfs(board, visited, x-1, y, root, str + board[x][y], res);
+        dfs(board, visited, x+1, y, root, str + board[x][y], res);
+        dfs(board, visited, x, y-1, root, str + board[x][y], res);
+        dfs(board, visited, x, y+1, root, str + board[x][y], res);
+        
+        visited[x][y] = false;
+    }
+}
+
+19.Kth Largest Element in an Array
+Medium
+
+1768
+
+154
+
+Favorite
+
+Share
+Find the kth largest element in an unsorted array. Note that it is the kth largest element in the sorted order, not the kth distinct element.
+
+Example 1:
+
+Input: [3,2,1,5,6,4] and k = 2
+Output: 5
+Example 2:
+
+Input: [3,2,3,1,2,4,5,5,6] and k = 4
+Output: 4
+Note: 
+You may assume k is always valid, 1 ≤ k ≤ array's length.
+
+class Solution {
+    public int findKthLargest(int[] nums, int k) {
+        if (nums == null || nums.length == 0) {return 0;}
+        return qs(nums, 0, nums.length-1, nums.length - k);
+    }
+    
+    public int qs(int[] num, int start, int end, int k) {
+        if (start > end) {return 0;}
+        
+        int pivot = num[end], left = start;
+        for (int i = start; i < end; i++) {
+            if(num[i] < pivot) {
+                swap(num, left, i);
+                left++;
+            }
+        }
+        
+        swap(num, left, end);
+        
+        if (left == k) {return num[k];}
+        else if (left < k) {return qs(num, left+1, end, k);}
+        else {return qs(num, start, left-1, k);}
+    }
+    
+    public void swap(int[] n, int i, int j) {
+        int tmp = n[i];
+        n[i] = n[j];
+        n[j] = tmp;
+    }
+}
+
+20.Basic Calculator
+Hard
+
+616
+
+84
+
+Favorite
+
+Share
+Implement a basic calculator to evaluate a simple expression string.
+
+The expression string may contain open ( and closing parentheses ), the plus + or minus sign -, non-negative integers and empty spaces .
+
+Example 1:
+
+Input: "1 + 1"
+Output: 2
+Example 2:
+
+Input: " 2-1 + 2 "
+Output: 3
+Example 3:
+
+Input: "(1+(4+5+2)-3)+(6+8)"
+Output: 23
+Note:
+You may assume that the given expression is always valid.
+Do not use the eval built-in library function.
+
+class Solution {
+    public int calculate(String s) {
+        if (s == null || s.length() == 0) {return 0;}
+        
+        Stack<Integer> stack = new Stack<>();
+        
+        int result = 0, sign = 1;
+        for (int i = 0; i < s.length(); i++) {
+            char ch = s.charAt(i);
+            
+            if (ch == ' ') {
+                continue;
+            } else if (ch == '(') {
+                stack.push(result);
+                stack.push(sign);
+                result = 0;
+                sign = 1;
+            } else if (ch == ')') {
+                result = result*stack.pop() + stack.pop();
+            } else if (ch - '1' >= 0 && ch - '1' <= 8) {
+                int sum = ch - '0';
+                while (i + 1 < s.length() && Character.isDigit(s.charAt(i + 1))) {
+                    sum = sum * 10 + s.charAt(i + 1) - '0';
+				    i++;
+                }
+                result += sum * sign;
+            } else if (ch == '+') {
+                sign = 1;
+            } else if (ch == '-') {
+                sign = -1;
+            }
+        }
+
+        return result;
+    }
+}
+
+
